@@ -1,0 +1,12 @@
+#include <stdio.h>
+
+int main()
+{
+  int x;
+  double y;
+
+  x= 3;
+  y = 4.7;
+
+  printf("x = %d y =  %lf\n", x, y);
+}

@@ -1,8 +1,0 @@
-#include <FPT.h>
-int main()
-
-  printf("how many slices?");
-scanf("%d", &n);
-G_init_graphics;
-G_rgb(1,1,1);
-G_clear();

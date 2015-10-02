@@ -1,4 +1,5 @@
 
+
 #include <D2d_matrix.h>
 
 
@@ -121,7 +122,7 @@ int D2d_scale(double a[3][3], double b[3][3], double sx, double sy){
   D2d_mat_mult(a,  t,a);
 
   t[0][0] = 1/sx; t[1][1] = 1/sy;
-  D2d_mat_mult(b,  t,b);
+  D2d_mat_mult(b,  b,t);
   
   return 1;
 }
@@ -143,7 +144,7 @@ int D2d_rotate(double a[3][3], double b[3][3], double rads){
     {0,0,1}
   };
   
-  D2d_mat_mult(b,  q,a);
+  D2d_mat_mult(b,  b,q);
   
 
   return 1;
@@ -156,7 +157,7 @@ int D2d_negate_x(double a[3][3], double b[3][3]){
   t[0][0] = -1;
 
   D2d_mat_mult(a, t,a);
-  D2d_mat_mult(b, t,b);
+  D2d_mat_mult(b, b,t);
 
   return 1;
   
@@ -169,7 +170,7 @@ int D2d_negate_y(double a[3][3], double b[3][3]){
   t[1][1] = -1;
 
   D2d_mat_mult(a, t,a);
-  D2d_mat_mult(b, t,b);
+  D2d_mat_mult(b, b,t);
 
   return 1;
   

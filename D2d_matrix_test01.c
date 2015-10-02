@@ -33,7 +33,7 @@ int main()
   D2d_print_mat(p) ;
   printf("+++++++++++++++++++++++++++++++++++++++++\n") ;
 
-
+  //works
   D2d_make_identity(p) ;
   D2d_make_identity(pinv) ;
   D2d_scale(p,pinv, 2.0, 0.5) ;
@@ -48,7 +48,7 @@ int main()
   D2d_print_mat(pinv) ;
   printf("+++++++++++++++++++++++++++++++++++++++++\n") ;
 
-
+  //works
   D2d_mat_mult (v,  p,pinv) ;
   printf("p*pinv = \n") ;
   D2d_print_mat(v) ;

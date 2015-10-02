@@ -185,10 +185,10 @@ int D2d_mat_mult_points (double *X, double *Y,
   
   for (i = 0; i < 3; i++){
     for (j = 0; j < numpoints; j++){
-      for (k = 0;k < 3; k++){
-	if (i == 0){
-	  tempX[j] = m[i][j]* x[j];
-	}
+      if (i == 0){
+	tempX[j] = m[i][0] * x[j] + m[i][1] * y[j]+ m[i][2];  
+	} else if (i == 1){
+	tempY[j] = m[i][0] * x[j] + m[i][1] * y[j]+ m[i][2];
       }
     }
   }

@@ -1,5 +1,3 @@
-
-
 #include <D2d_matrix.h>
 
 

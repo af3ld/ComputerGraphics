@@ -97,40 +97,8 @@ void drawit(int i){
   G_wait_key();
 }
 
-void translate(int i, double dx, double dy){
-  int k;
-  for (k=0; k < points[i]; k++){
-    x[i][k] += dx;
-    y[i][k] += dy;
-  }
-}
 
-
-void scale (int i, double sx, double sy){
-  int k;
-  for (k= 0; k < points[i]; k++){
-    x[i][k] *= sx;
-    y[i][k] *= sy;
-  }
-}
-
-
-
-void rotate(int i, double degrees){
-  double radians = (degrees * M_PI) /180;
-  double temp, c, s;
-  int k;
-
-  c = cos(radians); s = sin(radians);
-  for(k = 0; k < points[i]; k++){
-    temp = (x[i][k] * c) - ( y[i][k] * s);
-    x[i][k] = temp;
-    temp = (x[i][k] * s) + (y[i][k] * c);
-    y[i][k] = temp;
-  }
-  
-}
-
+ 
 
 
 
@@ -150,24 +118,6 @@ int main(int argc, char **argv)
       exit(1);
     } else if (i > 0) {
       readobject(*g, i);
-      drawit(i);
-      G_rgb(1,1,1);
-      G_clear();
-    
-
-      int scalarx, scalary;
-      scalarx = 500/boxwidth; scalary = 500/boxheight;
-      if (scalarx >= scalary){
-	scale(i, scalary, scalary);
-      } else{
-	scale(i, scalarx, scalarx);
-      }
-      drawit(i);
-     
-      
-   
+    }
   }
-    
-  }
-
 }

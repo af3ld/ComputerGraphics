@@ -80,6 +80,7 @@ void drawit(int i){
   int k, j;
   double tempx[points[i]], tempy[points[i]];
 
+ 
 
   for (k = 0; k < polys[i]; k++){
     for(j= 0; j < shapes[i][k]; j++){
@@ -104,20 +105,36 @@ void drawit(int i){
 
 int main(int argc, char **argv)
 {
-  int k, chars, i, numpoly; //i = each argument in command line
-  char l;
-  int tru = 1;
+  int k, chars, numpoly; //i = each argument in command line
+  int cont = 1;
+  char key;
+  double m[3][3], minv[3][3];
+  D2d_make_identity(m); D2d_make_identity(minv);
   
   FILE *g;
   
-  G_init_graphics(500,500);
-  for (i = 0; i < argc; i++){
+
+    scanf("%c", &key);
+    int i = key - '0';
+
     g = fopen(argv[i], "r"); //opens a file; r = read only
-    if (g == NULL){    //if the file is empty; it will let me know
+    
+    
+    if (g == NULL || i > argc || i > 40){
+      //if the file is empty, a too high of int is pressed,
+      //or if a char is pressed instead; it will let me know
       printf("can't open\n");
       exit(1);
     } else if (i > 0) {
+      // printf("cool");
+      G_init_graphics(500,500);
       readobject(*g, i);
+      D2d_translate(m, minv, -cx, -cy);
+      D2d_scale(m, minv, sf, sf);
+      D2d_translate(m, minv, 300, 300);
+      D2d_mat_mult_points(x,y, m, x,y, points);
+      drawit(i);
     }
-  }
+    G_wait_key();
 }
+    

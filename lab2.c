@@ -123,10 +123,12 @@ void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
 
 int main(int argc, char **argv)
 {
-  char key;  FILE *g;
+  char key, c;  FILE *g;
   double m[3][3], minv[3][3], sf;
-  int cycle = 1;
+  int inner_cycle = 1; int outer_cycle = 1;
   
+
+
     scanf("%c", &key);
     int i = key - '0';
 
@@ -142,21 +144,24 @@ int main(int argc, char **argv)
       G_init_graphics(WIDTH,HEIGHT);
       readobject(*g, i);
       
-      while (cycle == 1){
+      while (inner_cycle == 1){
 	G_rgb(1,1,1);
 	G_clear();
 	
 	D2d_make_identity(m); D2d_make_identity(minv);
-	D2d_rotate(m, minv, M_PI/90);
-	double sf = boundingbox(i); //Remember, sf == scale factor
+	D2d_rotate(m, minv, M_PI/45);
+        sf = boundingbox(i); //Remember, sf == scale factor
 	trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
 	boundingbox(i);
 	drawit(i);
 	draw_boundingbox();
-	G_wait_key();
+	
+	c = G_wait_key();
+	if (c != key){
+	  inner_cycle = 0;
+	}
       }
     }
-
   
 }
     

@@ -8,22 +8,26 @@ int polys[10];
 int shapes[100][100]; //the shapes[what argument][which shape]
 int shapeorder[100][100][100]; //where things connect to
 double red[100][100], green[100][100], blue[100][100]; //individual colors of each[what arg][which shape]
-int boxheight, boxwidth, centerx, centery;
+int boxheight, boxwidth, centerx, centery; 
+double smallx, smally, bigx, bigy; //specific smallest & largest (X,Y)'s
 
-double findscalefactor(){
-  if (WIDTH / boxwidth < HEIGHT / boxheight){
-    return WIDTH / boxwidth;
-  } else {
-    return HEIGHT / boxheight;
-  }
+
+//draws the bounding box
+void draw_boundingbox(){
+  G_rgb(1,0,0);
+  
+  G_rectangle(smallx, smally, boxwidth, boxheight);
+  G_line(smallx, smally, bigx, bigy);
+  G_line(smallx, bigy, bigx, smally);
 }
 
-
 //Draws bounding box around figure
-// only availble from draw it method
+// seems only availble from drawit method, but it
+//sometimes works from other spots,
+//but not from all spots
 double boundingbox(int i){
   int k;
-  double smallx, smally, bigx, bigy;
+  
   smallx = WIDTH * 2; smally = HEIGHT * 2;
   bigx = bigy = 0;
   for (k = 0; k < points[i]; k++){
@@ -40,20 +44,17 @@ double boundingbox(int i){
       bigy = y[i][k];
     }
   }
-  printf("smallest x: %lf, biggest x: %lf\n", smallx, bigx);
-  printf("smallest y: %lf, biggest y: %lf\n", smally, bigy);
-  G_rgb(1,0,0);
   
   boxheight = bigy - smally;
   boxwidth =  bigx - smallx;
   centerx = (bigx + smallx) /2;
   centery = (smally + bigy) / 2;
-  
-  G_rectangle(smallx, smally, boxwidth, boxheight);
-  G_line(smallx, smally, bigx, bigy);
-  G_line(smallx, bigy, bigx, smally);
 
-  return findscalefactor();
+  if (WIDTH / boxwidth < HEIGHT / boxheight){
+    return WIDTH / boxwidth;
+  } else {
+    return HEIGHT / boxheight;
+  }
 }
 
 
@@ -91,8 +92,6 @@ void drawit(int i){
   int k, j;
   double tempx[points[i]], tempy[points[i]];
 
- 
-
   for (k = 0; k < polys[i]; k++){
     for(j= 0; j < shapes[i][k]; j++){
       //printf("%d", shapeorder[i][k][j]);
@@ -104,15 +103,20 @@ void drawit(int i){
     
     G_rgb(red[i][k], green[i][k], blue[i][k]);
     G_fill_polygon(tempx, tempy, j);
-    
   }
-  G_wait_key();
 }
 
 
+//moves the image to (0,0),
+//then scales, and moves it to center of window
+void trans_scale_trans(int i, double sf, double m[3][3], double minv[3][3]){
+      //printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
+      D2d_translate(m, minv, -centerx, -centery);
+      D2d_scale(m, minv, sf, sf);
+      D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
+      D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+}
  
-
-
 
 int main(int argc, char **argv)
 {
@@ -124,31 +128,28 @@ int main(int argc, char **argv)
   
   FILE *g;
   
-
     scanf("%c", &key);
     int i = key - '0';
 
     g = fopen(argv[i], "r"); //opens a file; r = read only
     
-    
-    if (g == NULL || i > argc || i > 40){
+    if (g == NULL || i > argc || i > 40 || i == 0){
       //if the file is empty, a too high of int is pressed,
       //or if a char is pressed instead; it will let me know
       printf("can't open\n");
       exit(1);
+      
     } else if (i > 0) {
-      // printf("cool");
       G_init_graphics(WIDTH,HEIGHT);
       readobject(*g, i);
-      double sf = boundingbox(i);
-      printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
-      D2d_translate(m, minv, -centerx, -centery);
-      D2d_scale(m, minv, sf, sf);
-      D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
-      D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
-      boundingbox(i);
+      double sf = boundingbox(i); //Remember, sf == scale factor
+      trans_scale_trans(i, sf, m, minv);
+
       drawit(i);
+      boundingbox(i);
+      draw_boundingbox();
     }
+    
     G_wait_key();
 }
     

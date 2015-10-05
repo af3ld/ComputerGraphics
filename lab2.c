@@ -2,6 +2,7 @@
 #include <D2d_matrix.h>
 
 int WIDTH = 500; int HEIGHT = 500;
+
 int points[100]; //number of points in whatever
 double x[100][100], y[100][100]; //x and y coordinates
 int polys[10];
@@ -29,7 +30,7 @@ double boundingbox(int i){
   int k;
   
   smallx = WIDTH * 2; smally = HEIGHT * 2;
-  bigx = bigy = 0;
+  bigx = WIDTH * -2; bigy = HEIGHT * -2;
   for (k = 0; k < points[i]; k++){
     if (x[i][k] < smallx){
       smallx = x[i][k];
@@ -109,24 +110,22 @@ void drawit(int i){
 
 //moves the image to (0,0),
 //then scales, and moves it to center of window
-void trans_scale_trans(int i, double sf, double m[3][3], double minv[3][3]){
-      //printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
-      D2d_translate(m, minv, -centerx, -centery);
-      D2d_scale(m, minv, sf, sf);
-      D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
-      D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
+
+  printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
+  D2d_translate(m, minv, -centerx, -centery);
+  D2d_scale(m, minv, sf, sf);
+  D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
+  D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+ 
 }
  
 
 int main(int argc, char **argv)
 {
-  int k, chars, numpoly; //i = each argument in command line
-  int cont = 1;
-  char key;
-  double m[3][3], minv[3][3];
-  D2d_make_identity(m); D2d_make_identity(minv);
-  
-  FILE *g;
+  char key;  FILE *g;
+  double m[3][3], minv[3][3], sf;
+  int cycle = 1;
   
     scanf("%c", &key);
     int i = key - '0';
@@ -142,14 +141,22 @@ int main(int argc, char **argv)
     } else if (i > 0) {
       G_init_graphics(WIDTH,HEIGHT);
       readobject(*g, i);
-      double sf = boundingbox(i); //Remember, sf == scale factor
-      trans_scale_trans(i, sf, m, minv);
-
-      drawit(i);
-      boundingbox(i);
-      draw_boundingbox();
+      
+      while (cycle == 1){
+	G_rgb(1,1,1);
+	G_clear();
+	
+	D2d_make_identity(m); D2d_make_identity(minv);
+	D2d_rotate(m, minv, M_PI/90);
+	double sf = boundingbox(i); //Remember, sf == scale factor
+	trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
+	boundingbox(i);
+	drawit(i);
+	draw_boundingbox();
+	G_wait_key();
+      }
     }
-    
-    G_wait_key();
+
+  
 }
     

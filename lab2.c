@@ -1,6 +1,7 @@
 #include <FPT.h>
 #include <D2d_matrix.h>
 
+int WIDTH = 500; int HEIGHT = 500;
 int points[100]; //number of points in whatever
 double x[100][100], y[100][100]; //x and y coordinates
 int polys[10];
@@ -9,13 +10,21 @@ int shapeorder[100][100][100]; //where things connect to
 double red[100][100], green[100][100], blue[100][100]; //individual colors of each[what arg][which shape]
 int boxheight, boxwidth, centerx, centery;
 
+double findscalefactor(){
+  if (WIDTH / boxwidth < HEIGHT / boxheight){
+    return WIDTH / boxwidth;
+  } else {
+    return HEIGHT / boxheight;
+  }
+}
+
 
 //Draws bounding box around figure
 // only availble from draw it method
-void boundingbox(int i){
+double boundingbox(int i){
   int k;
   double smallx, smally, bigx, bigy;
-  smallx = smally = 500;
+  smallx = WIDTH * 2; smally = HEIGHT * 2;
   bigx = bigy = 0;
   for (k = 0; k < points[i]; k++){
     if (x[i][k] < smallx){
@@ -31,8 +40,8 @@ void boundingbox(int i){
       bigy = y[i][k];
     }
   }
-  //printf("smallest x: %lf, biggest x: %lf\n", smallx, bigx);
-  //printf("smallest y: %lf, biggest y: %lf\n", smally, bigy);
+  printf("smallest x: %lf, biggest x: %lf\n", smallx, bigx);
+  printf("smallest y: %lf, biggest y: %lf\n", smally, bigy);
   G_rgb(1,0,0);
   
   boxheight = bigy - smally;
@@ -43,6 +52,8 @@ void boundingbox(int i){
   G_rectangle(smallx, smally, boxwidth, boxheight);
   G_line(smallx, smally, bigx, bigy);
   G_line(smallx, bigy, bigx, smally);
+
+  return findscalefactor();
 }
 
 
@@ -93,7 +104,7 @@ void drawit(int i){
     
     G_rgb(red[i][k], green[i][k], blue[i][k]);
     G_fill_polygon(tempx, tempy, j);
-    boundingbox(i);
+    
   }
   G_wait_key();
 }
@@ -127,12 +138,15 @@ int main(int argc, char **argv)
       exit(1);
     } else if (i > 0) {
       // printf("cool");
-      G_init_graphics(500,500);
+      G_init_graphics(WIDTH,HEIGHT);
       readobject(*g, i);
-      D2d_translate(m, minv, -cx, -cy);
+      double sf = boundingbox(i);
+      printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
+      D2d_translate(m, minv, -centerx, -centery);
       D2d_scale(m, minv, sf, sf);
-      D2d_translate(m, minv, 300, 300);
-      D2d_mat_mult_points(x,y, m, x,y, points);
+      D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
+      D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+      boundingbox(i);
       drawit(i);
     }
     G_wait_key();

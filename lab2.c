@@ -121,47 +121,50 @@ void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
 }
  
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
   char key, c;  FILE *g;
   double m[3][3], minv[3][3], sf;
-  int inner_cycle = 1; int outer_cycle = 1;
-  
+  int cc;
+  int inner_cycle = 1;
 
+  scanf("%c", &key);
+  int i = key - '0';
 
-    scanf("%c", &key);
-    int i = key - '0';
-
-    g = fopen(argv[i], "r"); //opens a file; r = read only
+  g = fopen(argv[i], "r"); //opens a file; r = read only
     
-    if (g == NULL || i > argc || i > 40 || i == 0){
+  if (g == NULL || i > argc || i > 40 || i == 0){
       //if the file is empty, a too high of int is pressed,
       //or if a char is pressed instead; it will let me know
-      printf("can't open\n");
-      exit(1);
+    printf("can't open (1)\n");
+    exit(1);
       
-    } else if (i > 0) {
-      G_init_graphics(WIDTH,HEIGHT);
+  } else if (i > 0) {
+    G_init_graphics(WIDTH,HEIGHT);
+    
+    while (inner_cycle){
+      G_rgb(1,1,1);
+      G_clear();
       readobject(*g, i);
+	
+      D2d_make_identity(m); D2d_make_identity(minv);
+      D2d_rotate(m, minv, M_PI/45);
+      sf = boundingbox(i); //Remember, sf == scale factor
+      trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
+      boundingbox(i);
+      drawit(i);
+      draw_boundingbox();
+	
+      c = G_wait_key();
+      cc = c - '0';
       
-      while (inner_cycle == 1){
-	G_rgb(1,1,1);
-	G_clear();
-	
-	D2d_make_identity(m); D2d_make_identity(minv);
-	D2d_rotate(m, minv, M_PI/45);
-        sf = boundingbox(i); //Remember, sf == scale factor
-	trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
-	boundingbox(i);
-	drawit(i);
-	draw_boundingbox();
-	
-	c = G_wait_key();
-	if (c != key){
-	  inner_cycle = 0;
-	}
+      if (cc > 0 && cc < argc){
+	i = cc;
+	g = fopen(argv[i], "r");
+      } else{
+	printf("can't open (2)\n");
+	exit(1);
       }
     }
-  
+  }
 }
     

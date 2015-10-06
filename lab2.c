@@ -122,17 +122,18 @@ void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
  
 
 int main(int argc, char **argv){
-  char key, c;  FILE *g;
+  char key, c;  FILE *g[argc - 1];
   double m[3][3], minv[3][3], sf;
   int cc;
   int inner_cycle = 1;
 
   scanf("%c", &key);
   int i = key - '0';
-
-  g = fopen(argv[i], "r"); //opens a file; r = read only
+  for (cc = 0; cc < argc; cc++){
+    g[cc] = fopen(argv[i], "r"); //opens a file; r = read only
+  }
     
-  if (g == NULL || i > argc || i > 40 || i == 0){
+  if (g[i] == NULL || i > argc || i > 40 || i == 0){
       //if the file is empty, a too high of int is pressed,
       //or if a char is pressed instead; it will let me know
     printf("can't open (1)\n");
@@ -144,7 +145,7 @@ int main(int argc, char **argv){
     while (inner_cycle){
       G_rgb(1,1,1);
       G_clear();
-      readobject(*g, i);
+      readobject(*g[i], i);
 	
       D2d_make_identity(m); D2d_make_identity(minv);
       D2d_rotate(m, minv, M_PI/45);
@@ -159,7 +160,6 @@ int main(int argc, char **argv){
       
       if (cc > 0 && cc < argc){
 	i = cc;
-	g = fopen(argv[i], "r");
       } else{
 	printf("can't open (2)\n");
 	exit(1);

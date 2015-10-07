@@ -112,7 +112,7 @@ void drawit(int i){
 //then scales, and moves it to center of window
 void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
 
-  printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
+  //printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
   D2d_translate(m, minv, -centerx, -centery);
   D2d_scale(m, minv, sf, sf);
   D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
@@ -122,18 +122,17 @@ void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
  
 
 int main(int argc, char **argv){
-  char key, c;  FILE *g[argc - 1];
+  char key, c;  FILE *g;
   double m[3][3], minv[3][3], sf;
   int cc;
   int inner_cycle = 1;
 
   scanf("%c", &key);
   int i = key - '0';
-  for (cc = 0; cc < argc; cc++){
-    g[cc] = fopen(argv[i], "r"); //opens a file; r = read only
-  }
-    
-  if (g[i] == NULL || i > argc || i > 40 || i == 0){
+
+  g = fopen(argv[i], "r"); //opens a file; r = read only
+   
+  if (g == NULL || i > argc || i > 40 || i == 0){
       //if the file is empty, a too high of int is pressed,
       //or if a char is pressed instead; it will let me know
     printf("can't open (1)\n");
@@ -145,7 +144,7 @@ int main(int argc, char **argv){
     while (inner_cycle){
       G_rgb(1,1,1);
       G_clear();
-      readobject(*g[i], i);
+      readobject(*g, i);
 	
       D2d_make_identity(m); D2d_make_identity(minv);
       D2d_rotate(m, minv, M_PI/45);
@@ -159,7 +158,10 @@ int main(int argc, char **argv){
       cc = c - '0';
       
       if (cc > 0 && cc < argc){
-	i = cc;
+	if (cc != i){
+	  i = cc;
+	  g = fopen(argv[i], "r");
+	}
       } else{
 	printf("can't open (2)\n");
 	exit(1);

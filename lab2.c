@@ -13,14 +13,6 @@ int boxheight, boxwidth, centerx, centery;
 double smallx, smally, bigx, bigy; //specific smallest & largest (X,Y)'s
 
 
-//draws the bounding box
-void draw_boundingbox(){
-  G_rgb(1,0,0);
-  
-  G_rectangle(smallx, smally, boxwidth, boxheight);
-  G_line(smallx, smally, bigx, bigy);
-  G_line(smallx, bigy, bigx, smally);
-}
 
 //Draws bounding box around figure
 // seems only availble from drawit method, but it
@@ -58,6 +50,16 @@ double boundingbox(int i){
   }
 }
 
+
+//draws the bounding box
+void draw_boundingbox(int i){
+  boundingbox(i);
+  G_rgb(1,0,0);
+  
+  G_rectangle(smallx, smally, boxwidth, boxheight);
+  G_line(smallx, smally, bigx, bigy);
+  G_line(smallx, bigy, bigx, smally);
+}
 
 
 //reads the file and attaches the correct variable to each input
@@ -113,10 +115,13 @@ void drawit(int i){
 void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
 
   //printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
+  D2d_rotate(m, minv, M_PI/45);
+   
   D2d_translate(m, minv, -centerx, -centery);
   D2d_scale(m, minv, sf, sf);
   D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
   D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+
  
 }
 
@@ -127,8 +132,6 @@ int main(int argc, char **argv){
   int cc;
   int inner_cycle = 1;
 
-
-  
   for (cc = 0; cc < argc; cc++){
       g = fopen(argv[cc], "r"); //opens a file; r = read only
     
@@ -137,11 +140,12 @@ int main(int argc, char **argv){
 	exit(1);
       } else {
 	readobject(*g, cc);
+
       }
     }
 
   
-  printf("Print which item you would like to start with: ");
+  printf("Which item you would like to start with: ");
   scanf("%c", &key);
   int i = key - '0';
   
@@ -151,23 +155,21 @@ int main(int argc, char **argv){
     while (inner_cycle){
       G_rgb(1,1,1);
       G_clear();
-  
       D2d_make_identity(m); D2d_make_identity(minv);
-      D2d_rotate(m, minv, M_PI/20);
-      
+
       sf = boundingbox(i); //Remember, sf == scale factor
+      
       trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
-      boundingbox(i);
+
       drawit(i);
-      draw_boundingbox();
-	
+      draw_boundingbox(i);
+
+      
       c = G_wait_key();
       cc = c - '0';
-      
       if (cc > 0 && cc < argc){
 	if (cc != i){
 	  i = cc;
-	  g = fopen(argv[i], "r");
 	}
       } else{
 	printf("can't open (2)\n");

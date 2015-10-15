@@ -121,6 +121,7 @@ void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
 }
 
 
+
 int main(int argc, char **argv){
   char key, c;  FILE *g;
   double m[3][3], minv[3][3], sf;
@@ -155,10 +156,9 @@ int main(int argc, char **argv){
       sf = boundingbox(i); //Remember, sf == scale factor
       D2d_rotate(m, minv, M_PI/45);
       trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
-      
-      drawit(i);
+     
       draw_boundingbox(i);
-
+      drawit(i);
       
       c = G_wait_key();
       cc = c - '0';

@@ -1,4 +1,6 @@
 #include <FPT.h>
+int HEIGHT = 600; int WIDTH = 600;
+
 
 //click a point and it saves it into an array
 int clickAndSave(double x[100], double y[100]){
@@ -35,6 +37,7 @@ void myPolygon(double x[100], double y[100], int n){
   }
   }
 
+
 //sorts the values of an array
 void sort(double *x, int m){
   int k, s, i;
@@ -61,21 +64,33 @@ void printarray(double *w, int z){
   }
 }
 
-
-void fillgon(double *x, double *y, int z, double *slope){
-  //printarray(slope, z);
-  sort(x, z);
-  printarray(x, z);
-  int i;
-  for (i = 0; i < 600; i++){
-    if (i > x[0] && i < x[z-1]){
-      G_line(i, 0, i, 600);  
+double findlargest_y(double *y, int z){
+  double tempy = 0;
+  for(int i = 0; i < z; i++){
+    if (y[i] > tempy){
+      tempy = y[i];
     }
   }
+  return tempy;
 }
 
 
+double getslope(double x1, double y1, double x2, double y2){
+    return (y2 - y1) / (x2 - x1);
+}
 
+<<<<<<< HEAD
+void fillgon(double *x, double *y, int z){
+  double newx, newy;
+  double largesty = findlargest_y(y, z);
+  
+  double m = getslope(x[0], y[0], x[1], y[1]);
+  printf("%lf\n", m);
+  //printf("x:%lf, y:%lf, x:% lf, y:%lf\n", x[0], y[0], x[1], y[1]);
+  newx = (200 - 300) /m - x[0];
+  printf("%lf", newx);
+  
+=======
 //takes the x's and y's and returns an array of the slopes
 int getslope(double *x, double *y, int z, double *slope){
   int i;
@@ -85,18 +100,28 @@ int getslope(double *x, double *y, int z, double *slope){
   }
   slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
   return  i;
+>>>>>>> 5a428e3f44fd862591f342ef4b407a97d92853b1
 }
+
+
+
+
+
 
 
  
 int main()
 {
   double ax[100], ay[100], bx[100], by[100];
+<<<<<<< HEAD
+  double slope;
+=======
   double slope[100];
+>>>>>>> 5a428e3f44fd862591f342ef4b407a97d92853b1
   int anom, bnom, i;
 
 
-  G_init_graphics(600,600);
+  G_init_graphics(WIDTH, HEIGHT);
   G_rgb(0,0,0);
   G_clear();
   
@@ -107,10 +132,9 @@ int main()
   G_rgb(1,1,1);
 
   anom = clickAndSave(ax, ay);
-  myPolygon(ax,ay,anom);
-  i = getslope(ax, ay, anom, slope);
-  printarray(slope, i);
-  //fillgon(ax,ay, anom, slope);
+  myPolygon(ax,ay,anom); 
+  fillgon(ax,ay, anom);
+
  
 
 

@@ -1,4 +1,6 @@
 #include <FPT.h>
+int HEIGHT = 600; int WIDTH = 600;
+
 
 //click a point and it saves it into an array
 int clickAndSave(double x[100], double y[100]){
@@ -62,13 +64,31 @@ void printarray(double *w, int z){
   }
 }
 
+double findlargest_y(double *y, int z){
+  double tempy = 0;
+  for(int i = 0; i < z; i++){
+    if (y[i] > tempy){
+      tempy = y[i];
+    }
+  }
+  return tempy;
+}
+
+
 double getslope(double x1, double y1, double x2, double y2){
     return (y2 - y1) / (x2 - x1);
 }
 
 void fillgon(double *x, double *y, int z){
+  double newx, newy;
+  double largesty = findlargest_y(y, z);
+  
   double m = getslope(x[0], y[0], x[1], y[1]);
-  printf("%lf", m);
+  printf("%lf\n", m);
+  //printf("x:%lf, y:%lf, x:% lf, y:%lf\n", x[0], y[0], x[1], y[1]);
+  newx = (200 - 300) /m - x[0];
+  printf("%lf", newx);
+  
 }
 
 
@@ -85,7 +105,7 @@ int main()
   int anom, bnom, i;
 
 
-  G_init_graphics(600,600);
+  G_init_graphics(WIDTH, HEIGHT);
   G_rgb(0,0,0);
   G_clear();
   

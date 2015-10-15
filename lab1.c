@@ -91,26 +91,34 @@ double findsmallest(double *y, int z){
 
 
 //Points slope form; returns the new x coordinate
-double find_x(double xorig, double yorig, double slope, double newy){
-  double newx = yorig - newy;
+double find_x(double xknown, double yknown, double slope, double newy){
+  double newx = newy - yknown;
   newx = newx / slope;
-  return newx - xorig;
+  return newx + xknown;
 }
 
 
-double getslope(double x1, double y1, double x2, double y2){
-    return (y2 - y1) / (x2 - x1);
+void getslope(double *x, double *y, int z, double *slope){
+  int i;
+  for (i = 0; i < z; i++){
+    slope[i] = (y[i+1] - y[i]) / (x[i + 1] - x[i]);
+  }
+  slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
 }
 
-void fillgon(double *x, double *y, int z){
+
+void fillgon(double *x, double *y, int z, double *slope){
   double newx, newy;
   int largest_y_pos = findlargest(y, z); int smallest_y_pos = findsmallest(y,z);
-  
+
   //printf("(%lf,%lf), pos: %d \n", x[largest_y_pos], y[largest_y_pos], largest_y_pos);
 
   for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
-
-  }
+    double newx = find_x(x[0], y[0], slope[0], i);
+    printf("%lf\n", newx);
+    G_line(newx, i, 400, i);
+    
+  } 
 }
 
 
@@ -122,7 +130,7 @@ int main()
 {
   double ax[100], ay[100], bx[100], by[100];
 
-  double slope;
+  double slope[100];
   int anom, bnom, i;
 
 
@@ -138,9 +146,8 @@ int main()
 
   anom = clickAndSave(ax, ay);
   myPolygon(ax,ay,anom); 
-  fillgon(ax,ay, anom);
-
- 
+  getslope(ax, ay, anom ,slope);
+  fillgon(ax,ay, anom, slope);
 
 
 

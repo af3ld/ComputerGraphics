@@ -64,14 +64,37 @@ void printarray(double *w, int z){
   }
 }
 
-double findlargest_y(double *y, int z){
-  double tempy = 0;
+double findlargest(double *y, int z){
+  int position = 0;
+  double temp = 0;
   for(int i = 0; i < z; i++){
-    if (y[i] > tempy){
-      tempy = y[i];
+    if (y[i] > temp){
+       position = i;
+       temp = y[i];
     }
   }
-  return tempy;
+  return position;
+}
+
+
+double findsmallest(double *y, int z){
+  int position = 0;
+  double temp = HEIGHT;
+  for(int i = 0; i < z; i++){
+    if (y[i] < temp){
+       position = i;
+       temp = y[i];
+    }
+  }
+  return position;
+}
+
+
+//Points slope form; returns the new x coordinate
+double find_x(double xorig, double yorig, double slope, double newy){
+  double newx = yorig - newy;
+  newx = newx / slope;
+  return newx - xorig;
 }
 
 
@@ -81,17 +104,14 @@ double getslope(double x1, double y1, double x2, double y2){
 
 void fillgon(double *x, double *y, int z){
   double newx, newy;
-  double largesty = findlargest_y(y, z);
+  int largest_y_pos = findlargest(y, z); int smallest_y_pos = findsmallest(y,z);
   
-  double m = getslope(x[0], y[0], x[1], y[1]);
-  printf("%lf\n", m);
-  //printf("x:%lf, y:%lf, x:% lf, y:%lf\n", x[0], y[0], x[1], y[1]);
-  newx = (200 - 300) /m - x[0];
-  printf("%lf", newx);
+  //printf("(%lf,%lf), pos: %d \n", x[largest_y_pos], y[largest_y_pos], largest_y_pos);
 
+  for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
+
+  }
 }
-
-
 
 
 

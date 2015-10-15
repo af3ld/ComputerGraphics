@@ -79,7 +79,6 @@ double getslope(double x1, double y1, double x2, double y2){
     return (y2 - y1) / (x2 - x1);
 }
 
-<<<<<<< HEAD
 void fillgon(double *x, double *y, int z){
   double newx, newy;
   double largesty = findlargest_y(y, z);
@@ -89,18 +88,7 @@ void fillgon(double *x, double *y, int z){
   //printf("x:%lf, y:%lf, x:% lf, y:%lf\n", x[0], y[0], x[1], y[1]);
   newx = (200 - 300) /m - x[0];
   printf("%lf", newx);
-  
-=======
-//takes the x's and y's and returns an array of the slopes
-int getslope(double *x, double *y, int z, double *slope){
-  int i;
-  for (i = 0; i < z; i++){
-    slope[i] = (y[i+1] - y[i]) / (x[i + 1] - x[i]);
-    //printf("(%lf,%lf) to (%lf,%lf) : %lf\n", x[i], y[i], x[i+1], y[i+1], slope[i]);
-  }
-  slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
-  return  i;
->>>>>>> 5a428e3f44fd862591f342ef4b407a97d92853b1
+
 }
 
 
@@ -113,11 +101,8 @@ int getslope(double *x, double *y, int z, double *slope){
 int main()
 {
   double ax[100], ay[100], bx[100], by[100];
-<<<<<<< HEAD
+
   double slope;
-=======
-  double slope[100];
->>>>>>> 5a428e3f44fd862591f342ef4b407a97d92853b1
   int anom, bnom, i;
 
 

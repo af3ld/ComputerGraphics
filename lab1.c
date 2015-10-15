@@ -35,6 +35,7 @@ void myPolygon(double x[100], double y[100], int n){
   }
   }
 
+
 //sorts the values of an array
 void sort(double *x, int m){
   int k, s, i;
@@ -61,51 +62,43 @@ void printarray(double *w, int z){
   }
 }
 
+double getslope(double x1, double y1, double x2, double y2){
+    return (y2 - y1) / (x2 - x1);
+}
 
-void fillgon(double *x, double *y, int z, double *slope){
-  //printarray(slope, z);
-  sort(x, z);
-  printarray(x, z);
-  int i;
-  for (i = 0; i < 600; i++){
-    if (i > x[0] && i < x[z-1]){
-      G_line(i, 0, i, 600);  
-    }
-  }
+void fillgon(double *x, double *y, int z){
+  double m = getslope(x[0], y[0], x[1], y[1]);
+  printf("%lf", m);
 }
 
 
 
-//takes the x's and y's and returns an array of the slopes
-void getslope(double *x, double *y, int z, double *slope){
-  int i;
-  for (i = 0; i < z - 1; i++){
-    slope[i] = (y[i+1] - y[i]) / (x[i + 1] - x[i]);
-    //printf("(%lf,%lf) to (%lf,%lf) : %lf\n", x[i], y[i], x[i+1], y[i+1], slope[i]);
-  }
-  slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
-}
+
+
 
 
  
 int main()
 {
   double ax[100], ay[100], bx[100], by[100];
-  double slope[100];
-  int anom, bnom;
+  double slope;
+  int anom, bnom, i;
 
 
   G_init_graphics(600,600);
   G_rgb(0,0,0);
   G_clear();
+  
+  G_rgb(1,1,1);
+  G_fill_rectangle(0,0,77,77);
   G_rgb(.2,.6,.82);
   G_fill_rectangle(0,0,75,75);
   G_rgb(1,1,1);
 
   anom = clickAndSave(ax, ay);
   myPolygon(ax,ay,anom);
-  getslope(ax, ay, anom, slope);
-  fillgon(ax,ay, anom, slope);
+ 
+  fillgon(ax,ay, anom);
  
 
 

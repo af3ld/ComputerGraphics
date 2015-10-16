@@ -1,4 +1,5 @@
 #include <FPT.h>
+
 int HEIGHT = 600; int WIDTH = 600;
 
 
@@ -64,6 +65,7 @@ void printarray(double *w, int z){
   }
 }
 
+//finds the largest value in array
 double findlargest(double *y, int z){
   int position = 0;
   double temp = 0;
@@ -77,6 +79,7 @@ double findlargest(double *y, int z){
 }
 
 
+//finds the smallest in array
 double findsmallest(double *y, int z){
   int position = 0;
   double temp = HEIGHT;
@@ -97,7 +100,7 @@ double find_x(double xknown, double yknown, double slope, double newy){
   return newx + xknown;
 }
 
-
+//gets the slope of all the lines; returns them via modified array
 void getslope(double *x, double *y, int z, double *slope){
   int i;
   for (i = 0; i < z; i++){
@@ -106,7 +109,8 @@ void getslope(double *x, double *y, int z, double *slope){
   slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
 }
 
-
+//fills the polygon
+//currently not complete
 void fillgon(double *x, double *y, int z, double *slope){
   double newx, newy;
   int largest_y_pos = findlargest(y, z); int smallest_y_pos = findsmallest(y,z);
@@ -114,14 +118,13 @@ void fillgon(double *x, double *y, int z, double *slope){
   //printf("(%lf,%lf), pos: %d \n", x[largest_y_pos], y[largest_y_pos], largest_y_pos);
 
   for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
-    double newx = find_x(x[0], y[0], slope[0], i);
-    printf("%lf\n", newx);
-    G_line(newx, i, 400, i);
+    double start_x = find_x(x[0], y[0], slope[0], i);
+    double end_x = find_x(x[1], y[1], slope[0], i);
+    printf("start:%lf, end: %lf\n", start_x, end_x);
+    G_line(start_x, i, end_x, i);
     
   } 
 }
-
-
 
 
 

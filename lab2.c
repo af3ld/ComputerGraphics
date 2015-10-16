@@ -63,27 +63,27 @@ void draw_boundingbox(int i){
 
 
 //reads the file and attaches the correct variable to each input
-void readobject(FILE g, int i){
+void readobject(FILE *g, int i){
   int k, j;
   
-  fscanf(&g, "%d", &points[i]);
+  fscanf(g, "%d", &points[i]);
   //printf("there are %d points\n", points[i]);
   for (k=0; k < points[i]; k++){
-    fscanf(&g, "%lf  %lf", &x[i][k], &y[i][k]);
+    fscanf(g, "%lf  %lf", &x[i][k], &y[i][k]);
     //printf("(%lf,%lf)\n", x[i][k], y[i][k]);
   }
-  fscanf(&g, "%d", &polys[i]);
+  fscanf(g, "%d", &polys[i]);
   //printf("there are %d polygons in this whatever\n", polys[i]);
  
   for(k = 0; k < polys[i]; k++){
-    fscanf(&g, "%d", &shapes[i][k]);
+    fscanf(g, "%d", &shapes[i][k]);
     for(j = 0; j < shapes[i][k]; j++){
-      fscanf(&g, "%d", &shapeorder[i][k][j]);
+      fscanf(g, "%d", &shapeorder[i][k][j]);
       //printf("%d\n", shapeorder[i][k][j]);
     }
   }
   for(k=0; k < polys[i]; k++){
-    fscanf(&g, "%lf %lf %lf", &red[i][k], &green[i][k], &blue[i][k]); //the rgb
+    fscanf(g, "%lf %lf %lf", &red[i][k], &green[i][k], &blue[i][k]); //the rgb
     //printf("(%lf, %lf, %lf)\n", red[i][k], green[i][k], blue[i][k]);
   }
 }
@@ -128,14 +128,14 @@ int main(int argc, char **argv){
   int cc;
   int inner_cycle = 1;
 
-  for (cc = 0; cc < argc; cc++){
+  for (cc = 1; cc < argc; cc++){
       g = fopen(argv[cc], "r"); //opens a file; r = read only
     
       if (g == NULL){	//if the file is empty, it will let me know
 	printf("can't open (1)\n");
 	exit(1);
       } else {
-	readobject(*g, cc);
+	readobject(g, cc);
 
       }
     }

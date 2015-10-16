@@ -140,7 +140,9 @@ int main(int argc, char **argv){
     }
 
   
-  printf("Which item you would like to start with: ");
+  printf("Which item you would like to start with:\n");
+  printf("(press a number key between 1 through %d) ", argc - 1);
+  
   scanf("%c", &key);
   int i = key - '0';
   

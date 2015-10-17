@@ -135,7 +135,6 @@ int main(int argc, char **argv){
 	exit(1);
       } else {
 	readobject(g, cc);
-
       }
     }
 
@@ -152,12 +151,13 @@ int main(int argc, char **argv){
     while (inner_cycle){
       G_rgb(1,1,1);
       G_clear();
+	
       D2d_make_identity(m); D2d_make_identity(minv);
-
       sf = boundingbox(i); //Remember, sf == scale factor
-      D2d_rotate(m, minv, M_PI/45);
+
+      D2d_rotate(m, minv, M_PI/90);
       trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
-     
+      
       draw_boundingbox(i);
       drawit(i);
       

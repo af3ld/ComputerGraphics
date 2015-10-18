@@ -109,21 +109,22 @@ void getslope(double *x, double *y, int z, double *slope){
   slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
 }
 
+
+
 //fills the polygon
 //currently not complete
 void fillgon(double *x, double *y, int z, double *slope){
   double newx, newy;
   int largest_y_pos = findlargest(y, z); int smallest_y_pos = findsmallest(y,z);
-
-  //printf("(%lf,%lf), pos: %d \n", x[largest_y_pos], y[largest_y_pos], largest_y_pos);
-
-  for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
-    double start_x = find_x(x[0], y[0], slope[0], i);
-    double end_x = find_x(x[1], y[1], slope[0], i);
-    printf("start:%lf, end: %lf\n", start_x, end_x);
-    G_line(start_x, i, end_x, i);
-    
-  } 
+  sort(x, z);
+  printarray(x, z);
+  
+  //for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
+  //double start_x = find_x(x[0], y[0], slope[0], i);
+  //double end_x = find_x(x[1], y[1], slope[0], i);
+  //printf("start:%lf, end: %lf\n", start_x, end_x);
+  //G_line(start_x, i, end_x, i);  
+  //} 
 }
 
 

@@ -28,10 +28,12 @@ int clickAndSave(double *x, double *y){
   double ca[2];
   int i = 0;
   int going = 1;
+  G_rgb(0,0,0);;
+  G_draw_string("Click here to end clipping", 0,0);
   while (going){
     G_wait_click(ca);
     //printf("%lf, %lf\n", ca[0], ca[1]);
-    if (ca[0] < 75 & ca[1] < 75){
+    if (ca[0] < 260 & ca[1] < 15){
       going = 0;
       x[i] = x[0];
       y[i] = y[0];
@@ -39,6 +41,8 @@ int clickAndSave(double *x, double *y){
     }else{ 
       x[i] = ca[0];
       y[i] = ca[1];
+      G_rgb(0,1,1);
+      G_circle(x[i], y[i], 1);
       G_rgb(0,0,0);
       G_circle(x[i], y[i], 2);
       i++;
@@ -95,17 +99,6 @@ double boundingbox(int i){
   } else {
     return HEIGHT / boxheight;
   }
-}
-
-
-//draws the bounding box
-void draw_boundingbox(int i){
-  boundingbox(i);
-  G_rgb(1,0,0);
-  
-  G_rectangle(smallx, smally, boxwidth, boxheight);
-  G_line(smallx, smally, bigx, bigy);
-  G_line(smallx, bigy, bigx, smally);
 }
 
 
@@ -181,6 +174,15 @@ void welcome(int i){
   printf("\nthen press TAB to begin clipping\n");
 }
 
+//the clipping container
+void clipping(double *clipx, double *clipy){
+
+  int temp_i = clickAndSave(clipx, clipy);
+  myPolygon(clipx, clipy, temp_i);
+  G_wait_key();
+
+}
+
 
 
 int main(int argc, char **argv){
@@ -217,8 +219,7 @@ int main(int argc, char **argv){
       sf = boundingbox(i); //Remember, sf == scale factor
       D2d_rotate(m, minv, M_PI/45);
       trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
-     
-      draw_boundingbox(i);
+
       drawit(i);
       
       c = G_wait_key();
@@ -231,9 +232,10 @@ int main(int argc, char **argv){
       }else if (cc == -39){
 	printf("coolio\n");
 	inner_cycle = 0;
-	int temp_i = clickAndSave(clipx, clipy);
-	myPolygon(clipx, clipy, temp_i);
-	G_wait_key();
+
+	clipping(clipx, clipy);
+	
+	inner_cycle = 1;
       } else{
 	printf("can't open (2)\n");
 	exit(1);

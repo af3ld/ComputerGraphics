@@ -1,6 +1,7 @@
 #include <FPT.h>
 #include <D2d_matrix.h>
 
+
 int WIDTH = 500; int HEIGHT = 500;
 
 int points[100]; //number of points in whatever
@@ -11,6 +12,16 @@ int shapeorder[100][100][100]; //where things connect to
 double red[100][100], green[100][100], blue[100][100]; //individual colors of each[what arg][which shape]
 int boxheight, boxwidth, centerx, centery; 
 double smallx, smally, bigx, bigy; //specific smallest & largest (X,Y)'s
+
+//determines if a point is on one side of the line or the other 
+double whatside(double ax, double ay, double bx,
+		double by, double x1, double y1,
+		double x2, double y2){
+  
+    return ((y1 - y2)*(ax - x1) + (x2 -x1)*(ay -y1)) *
+      ((y1 - y2)*(bx - x1) + (x2 - x1)*(by -y1));
+}
+
 
 //click a point and it saves it into an array
 int clickAndSave(double *x, double *y){
@@ -33,13 +44,13 @@ int clickAndSave(double *x, double *y){
       i++;
       //printf(" %d\n", i);
     }
-    char c = G_key();
+    
   }
   return i;
 }
 
 //draws the polygon; unfilled
-void myPolygon(double x[100], double y[100], int n){
+void myPolygon(double *x, double *y, int n){
   int i = 0;
   while (i <= n){
     if (i != n){
@@ -220,8 +231,9 @@ int main(int argc, char **argv){
       }else if (cc == -39){
 	printf("coolio\n");
 	inner_cycle = 0;
-	clickAndSave(clipx, clipy);
-	
+	int temp_i = clickAndSave(clipx, clipy);
+	myPolygon(clipx, clipy, temp_i);
+	G_wait_key();
       } else{
 	printf("can't open (2)\n");
 	exit(1);

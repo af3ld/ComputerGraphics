@@ -1,4 +1,5 @@
 #include <FPT.h>
+
 int HEIGHT = 600; int WIDTH = 600;
 
 
@@ -64,36 +65,66 @@ void printarray(double *w, int z){
   }
 }
 
-double findlargest_y(double *y, int z){
-  double tempy = 0;
+//finds the largest value in array
+double findlargest(double *y, int z){
+  int position = 0;
+  double temp = 0;
   for(int i = 0; i < z; i++){
-    if (y[i] > tempy){
-      tempy = y[i];
+    if (y[i] > temp){
+       position = i;
+       temp = y[i];
     }
   }
-  return tempy;
+  return position;
 }
 
 
-double getslope(double x1, double y1, double x2, double y2){
-    return (y2 - y1) / (x2 - x1);
+//finds the smallest in array
+double findsmallest(double *y, int z){
+  int position = 0;
+  double temp = HEIGHT;
+  for(int i = 0; i < z; i++){
+    if (y[i] < temp){
+       position = i;
+       temp = y[i];
+    }
+  }
+  return position;
 }
 
-void fillgon(double *x, double *y, int z){
+
+//Points slope form; returns the new x coordinate
+double find_x(double xknown, double yknown, double slope, double newy){
+  double newx = newy - yknown;
+  newx = newx / slope;
+  return newx + xknown;
+}
+
+//gets the slope of all the lines; returns them via modified array
+void getslope(double *x, double *y, int z, double *slope){
+  int i;
+  for (i = 0; i < z; i++){
+    slope[i] = (y[i+1] - y[i]) / (x[i + 1] - x[i]);
+  }
+  slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
+}
+
+//fills the polygon
+//currently not complete
+void fillgon(double *x, double *y, int z, double *slope){
   double newx, newy;
-  double largesty = findlargest_y(y, z);
-  
-  double m = getslope(x[0], y[0], x[1], y[1]);
-  printf("%lf\n", m);
-  //printf("x:%lf, y:%lf, x:% lf, y:%lf\n", x[0], y[0], x[1], y[1]);
-  newx = (200 - 300) /m - x[0];
-  printf("%lf", newx);
+  int largest_y_pos = findlargest(y, z); int smallest_y_pos = findsmallest(y,z);
 
+  //printf("(%lf,%lf), pos: %d \n", x[largest_y_pos], y[largest_y_pos], largest_y_pos);
+
+  for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
+    double start_x = find_x(x[0], y[0], slope[0], i);
+    double end_x = find_x(x[1], y[1], slope[0], i);
+    printf("start:%lf, end: %lf\n", start_x, end_x);
+    G_line(start_x, i, end_x, i);
+    
+  } 
 }
-
-
-
-
 
 
 
@@ -102,7 +133,7 @@ int main()
 {
   double ax[100], ay[100], bx[100], by[100];
 
-  double slope;
+  double slope[100];
   int anom, bnom, i;
 
 
@@ -118,9 +149,8 @@ int main()
 
   anom = clickAndSave(ax, ay);
   myPolygon(ax,ay,anom); 
-  fillgon(ax,ay, anom);
-
- 
+  getslope(ax, ay, anom ,slope);
+  fillgon(ax,ay, anom, slope);
 
 
 

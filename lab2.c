@@ -121,6 +121,19 @@ void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
 }
 
 
+//writes the opening instructions
+void welcome(int i){
+  printf("Press");
+  if (i == 1){
+    printf(" 1 to start: ");
+  } else if (i == 2){
+    printf(" 1 or 2 to start: ");
+  } else {
+    printf(" 1 through %d to begin: ", i);
+  }
+}
+
+
 
 int main(int argc, char **argv){
   char key, c;  FILE *g;
@@ -135,12 +148,11 @@ int main(int argc, char **argv){
 	exit(1);
       } else {
 	readobject(g, cc);
+
       }
     }
-
   
-  printf("Which item you would like to start with:\n");
-  printf("(press a number key between 1 through %d)\n", argc - 1);
+  welcome(argc - 1);
   
   scanf("%c", &key);
   int i = key - '0';

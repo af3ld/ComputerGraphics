@@ -12,6 +12,42 @@ double red[100][100], green[100][100], blue[100][100]; //individual colors of ea
 int boxheight, boxwidth, centerx, centery; 
 double smallx, smally, bigx, bigy; //specific smallest & largest (X,Y)'s
 
+//click a point and it saves it into an array
+int clickAndSave(double *x, double *y){
+  double ca[2];
+  int i = 0;
+  int going = 1;
+  while (going){
+    G_wait_click(ca);
+    //printf("%lf, %lf\n", ca[0], ca[1]);
+    if (ca[0] < 75 & ca[1] < 75){
+      going = 0;
+      x[i] = x[0];
+      y[i] = y[0];
+      //printf("done\n");
+    }else{ 
+      x[i] = ca[0];
+      y[i] = ca[1];
+      G_rgb(0,0,0);
+      G_circle(x[i], y[i], 2);
+      i++;
+      //printf(" %d\n", i);
+    }
+    char c = G_key();
+  }
+  return i;
+}
+
+//draws the polygon; unfilled
+void myPolygon(double x[100], double y[100], int n){
+  int i = 0;
+  while (i <= n){
+    if (i != n){
+      G_line(x[i], y[i], x[i+1], y[i+1]);
+    } 
+    i++;
+  }
+}
 
 
 //Draws bounding box around figure
@@ -125,19 +161,20 @@ void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
 void welcome(int i){
   printf("Press");
   if (i == 1){
-    printf(" 1 to start: ");
+    printf(" 1 to start,");
   } else if (i == 2){
-    printf(" 1 or 2 to start: ");
+    printf(" 1 or 2 to start,");
   } else {
-    printf(" 1 through %d to begin: ", i);
+    printf(" 1 through %d to begin,", i);
   }
+  printf("\nthen press TAB to begin clipping\n");
 }
 
 
 
 int main(int argc, char **argv){
   char key, c;  FILE *g;
-  double m[3][3], minv[3][3], sf;
+  double m[3][3], minv[3][3], clipx[100], clipy[100], sf;
   int cc;
   int inner_cycle = 1;
 
@@ -154,9 +191,9 @@ int main(int argc, char **argv){
     }
   
   welcome(argc - 1);
-  
   scanf("%c", &key);
   int i = key - '0';
+
   
   if (i < argc && i > 0){
   G_init_graphics(WIDTH,HEIGHT);
@@ -175,14 +212,16 @@ int main(int argc, char **argv){
       
       c = G_wait_key();
       cc = c - '0';
-      printf("%d\n", cc);
+
       if (cc > 0 && cc < argc){
 	if (cc != i){
 	  i = cc;
 	}
       }else if (cc == -39){
-	printf("coolio");
+	printf("coolio\n");
 	inner_cycle = 0;
+	clickAndSave(clipx, clipy);
+	
       } else{
 	printf("can't open (2)\n");
 	exit(1);

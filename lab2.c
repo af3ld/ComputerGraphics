@@ -109,15 +109,23 @@ void drawit(int i){
   }
 }
 
+//controls the movement of the object
+//When swatch == 0, sets up the 
+void movement(int i, double sf, double m[3][3], double minv[3][3], int swatch){
+  if (swatch == 0){
+    
+    D2d_translate(m, minv, -centerx, -centery);
+    D2d_scale(m, minv, sf, sf);
+    D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
+    D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+  } else if (swatch == 1) {
+    
+    D2d_translate(m, minv, -centerx, -centery);
+    D2d_rotate(m, minv, M_PI/90);
+    D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
+    D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+  }
 
-//moves the image to (0,0),
-//then scales, and moves it to center of window
-void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
-  //printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
-  D2d_translate(m, minv, -centerx, -centery);
-  D2d_scale(m, minv, sf, sf);
-  D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
-  D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
 }
 
 
@@ -151,12 +159,11 @@ int main(int argc, char **argv){
 	
 	D2d_make_identity(m); D2d_make_identity(minv);
 	sf = boundingbox(cc); //Remember, sf == scale factor
-	trans_scale_trans(cc,sf, m, minv); //(arg, scale, m, m inverse)
+        movement(cc, sf, m, minv, 0); //(arg, scale, m, m inverse)
       }
     }
   
   welcome(argc - 1);
-  
   scanf("%c", &key);
   int i = key - '0';
   
@@ -168,18 +175,11 @@ int main(int argc, char **argv){
       G_clear();
 	
       D2d_make_identity(m); D2d_make_identity(minv);
-
       draw_boundingbox(i);
       drawit(i);
       sf = boundingbox(i); //Remember, sf == scale factor
-      D2d_translate(m, minv, -centerx, -centery);
-      D2d_rotate(m, minv, M_PI/90);
-      D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
-      D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
-      //trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
-      
+      movement(i, sf, m, minv, 1);
 
-      
       G_rgb(0,0,0);
       G_fill_circle(WIDTH/2, HEIGHT/2, 3);
       

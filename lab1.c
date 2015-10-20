@@ -36,7 +36,7 @@ void myPolygon(double x[100], double y[100], int n){
     } 
     i++;
   }
-  }
+}
 
 
 //sorts the values of an array
@@ -66,7 +66,7 @@ void printarray(double *w, int z){
 }
 
 //finds the largest value in array
-double findlargest(double *y, int z){
+int findlargest(double *y, int z){
   int position = 0;
   double temp = 0;
   for(int i = 0; i < z; i++){
@@ -80,7 +80,7 @@ double findlargest(double *y, int z){
 
 
 //finds the smallest in array
-double findsmallest(double *y, int z){
+int findsmallest(double *y, int z){
   int position = 0;
   double temp = HEIGHT;
   for(int i = 0; i < z; i++){
@@ -93,12 +93,13 @@ double findsmallest(double *y, int z){
 }
 
 
-//Points slope form; returns the new x coordinate
+//Points slope form; returns the new x coordinate i.e. the intersection
 double find_x(double xknown, double yknown, double slope, double newy){
   double newx = newy - yknown;
   newx = newx / slope;
   return newx + xknown;
 }
+
 
 //gets the slope of all the lines; returns them via modified array
 void getslope(double *x, double *y, int z, double *slope){
@@ -113,26 +114,33 @@ void getslope(double *x, double *y, int z, double *slope){
 //fills the polygon
 //currently not complete
 void fillgon(double *x, double *y, int z, double *slope){
-  double xintersect[100], yintersect[100];
-  int i, j;
-  int largest_y_pos = findlargest(y, z); int smallest_y_pos = findsmallest(y,z);
+  double newx[z * 2], tempx;
+  int i, j, k;
+  int ly_pos = findlargest(y, z); int sy_pos = findsmallest(y,z); //large y & small y
+  int lx_pos = findlargest(x, z); int sx_pos = findsmallest(x,z); //large x & small x
+
   
-  for (j = (int) y[smallest_y_pos] - 1; j < y[largest_y_pos]; j++){
-  for (i = 0; i < z; i++){
-    double newx = find_x(x[i], y[i], slope[i], j);
-    printf("%lf\n", newx);
-    G_circle(newx, j, 3);
+  for (j = (int) y[sy_pos] - 1; j < y[ly_pos]; j++){
+    for (i = 0; i < z; i++){
+      G_rgb(1.0/i, .01/i, 1.0/i);
+      tempx = find_x(x[i], y[i], slope[i], j);
+      
+      if (tempx < x[lx_pos] && tempx > x[sx_pos]){
+	newx[i] = tempx;
+	//printf("x%d: %lf\n",i, newx[i]);
+	G_circle(newx[i], j, 2);
+      }
     }
-  printf("\n");
+    //sort(newx, i);
+    //printarray(newx, i);
+
+ 
+
+    //if (isnan(newx[0]) == 0 && isnan(newx[1]) == 0){
+    //printf("x0: %lf, x1: %lf\n", newx[0], newx[1]);
+    //G_line(newx[0], j, newx[1], j);
+    //}
   }
-  
-  //for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
-    //double start_x = find_x(x[0], y[0], slope[0], i);
-  //G_circle(start_x, i, 1);
-  //double end_x = find_x(x[2], y[2], slope[1], i);
-  //printf("start:%lf, end: %lf\n", start_x, end_x);
-  //G_line(start_x, i, end_x, i);  
-  //} 
 }
 
 
@@ -147,7 +155,7 @@ int main()
 
 
   G_init_graphics(WIDTH, HEIGHT);
-  G_rgb(0,0,0);
+  G_rgb(.1,0,0);
   G_clear();
   
   G_rgb(1,1,1);

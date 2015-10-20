@@ -55,7 +55,7 @@ double boundingbox(int i){
 void draw_boundingbox(int i){
   boundingbox(i);
   G_rgb(1,0,0);
-  
+  //printf("small: (%lf,%lf), big: (%lf,%lf)\n", smallx, smally, bigx, bigy);
   G_rectangle(smallx, smally, boxwidth, boxheight);
   G_line(smallx, smally, bigx, bigy);
   G_line(smallx, bigy, bigx, smally);
@@ -148,7 +148,10 @@ int main(int argc, char **argv){
 	exit(1);
       } else {
 	readobject(g, cc);
-
+	
+	D2d_make_identity(m); D2d_make_identity(minv);
+	sf = boundingbox(cc); //Remember, sf == scale factor
+	trans_scale_trans(cc,sf, m, minv); //(arg, scale, m, m inverse)
       }
     }
   
@@ -165,13 +168,20 @@ int main(int argc, char **argv){
       G_clear();
 	
       D2d_make_identity(m); D2d_make_identity(minv);
-      sf = boundingbox(i); //Remember, sf == scale factor
 
-      D2d_rotate(m, minv, M_PI/90);
-      trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
-      
       draw_boundingbox(i);
       drawit(i);
+      sf = boundingbox(i); //Remember, sf == scale factor
+      D2d_translate(m, minv, -centerx, -centery);
+      D2d_rotate(m, minv, M_PI/90);
+      D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
+      D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+      //trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
+      
+
+      
+      G_rgb(0,0,0);
+      G_fill_circle(WIDTH/2, HEIGHT/2, 3);
       
       c = G_wait_key();
       cc = c - '0';

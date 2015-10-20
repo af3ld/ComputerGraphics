@@ -110,21 +110,29 @@ void getslope(double *x, double *y, int z, double *slope){
 }
 
 
-
 //fills the polygon
 //currently not complete
 void fillgon(double *x, double *y, int z, double *slope){
-  double newx, newy;
+  double xintersect[100], yintersect[100];
+  int i, j;
   int largest_y_pos = findlargest(y, z); int smallest_y_pos = findsmallest(y,z);
-  sort(x, z);
-  printarray(x, z);
   
-  for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
-    double start_x = find_x(x[0], y[0], slope[0], i);
-    double end_x = find_x(x[2], y[2], slope[1], i);
-    printf("start:%lf, end: %lf\n", start_x, end_x);
-    G_line(start_x, i, end_x, i);  
-  } 
+  for (j = (int) y[smallest_y_pos] - 1; j < y[largest_y_pos]; j++){
+  for (i = 0; i < z; i++){
+    double newx = find_x(x[i], y[i], slope[i], j);
+    printf("%lf\n", newx);
+    G_circle(newx, j, 3);
+    }
+  printf("\n");
+  }
+  
+  //for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
+    //double start_x = find_x(x[0], y[0], slope[0], i);
+  //G_circle(start_x, i, 1);
+  //double end_x = find_x(x[2], y[2], slope[1], i);
+  //printf("start:%lf, end: %lf\n", start_x, end_x);
+  //G_line(start_x, i, end_x, i);  
+  //} 
 }
 
 

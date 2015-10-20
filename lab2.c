@@ -175,13 +175,14 @@ int main(int argc, char **argv){
       G_clear();
 	
       D2d_make_identity(m); D2d_make_identity(minv);
-      draw_boundingbox(i);
-      drawit(i);
+
       sf = boundingbox(i); //Remember, sf == scale factor
       movement(i, sf, m, minv, 1);
-
-      G_rgb(0,0,0);
-      G_fill_circle(WIDTH/2, HEIGHT/2, 3);
+      draw_boundingbox(i);
+      drawit(i);
+      
+      //G_rgb(0,0,0);
+      //G_fill_circle(WIDTH/2, HEIGHT/2, 3);
       
       c = G_wait_key();
       cc = c - '0';

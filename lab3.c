@@ -149,17 +149,26 @@ void drawit(int i){
   }
 }
 
+//controls the movement of the object
+//Swatch == 0, sets up moving the object to the center, scale, and back
+//to the center of the window
+//Swatch == 0, sets up the rotate function
+void movement(int i, double sf, double m[3][3], double minv[3][3], int swatch){
+  if (swatch == 0){
+    
+    D2d_translate(m, minv, -centerx, -centery);
+    D2d_scale(m, minv, sf, sf);
+    D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
+    D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+  } else if (swatch == 1) {
+    
+    D2d_translate(m, minv, -centerx, -centery);
+    D2d_rotate(m, minv, M_PI/45);
+    D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
+    D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+  }
 
-//moves the image to (0,0),
-//then scales, and moves it to center of window
-void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
-  //printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
-  D2d_translate(m, minv, -centerx, -centery);
-  D2d_scale(m, minv, sf, sf);
-  D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
-  D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
 }
-
 
 //writes the opening instructions
 void welcome(int i){
@@ -191,17 +200,20 @@ int main(int argc, char **argv){
   int cc;
   int inner_cycle = 1;
 
-  for (cc = 1; cc < argc; cc++){
+ for (cc = 1; cc < argc; cc++){
       g = fopen(argv[cc], "r"); //opens a file; r = read only
-    
       if (g == NULL){	//if the file is empty, it will let me know
 	printf("can't open (1)\n");
 	exit(1);
       } else {
 	readobject(g, cc);
-
+	
+	D2d_make_identity(m); D2d_make_identity(minv);
+	sf = boundingbox(cc); //Remember, sf == scale factor
+        movement(cc, sf, m, minv, 0); //(arg, scale, m, m inverse)
       }
     }
+  
   
   welcome(argc - 1);
   scanf("%c", &key);
@@ -217,9 +229,7 @@ int main(int argc, char **argv){
       D2d_make_identity(m); D2d_make_identity(minv);
 
       sf = boundingbox(i); //Remember, sf == scale factor
-      D2d_rotate(m, minv, M_PI/45);
-      trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
-
+      movement(i, sf, m, minv, 1);
       drawit(i);
       
       c = G_wait_key();

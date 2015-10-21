@@ -2,6 +2,33 @@
 
 int HEIGHT = 600; int WIDTH = 600;
 
+//sorts the values of an array
+void sort(double *x, int m){
+  int k, s, i;
+  double temp;
+  for (i = 0; i < m; i++){
+    s = i;
+    for (k = i + 1; k < m; k++){
+      if (x[k] < x[s]){
+	s = k;
+      }
+      temp = x[i];
+      x[i] = x[s];
+      x[s] = temp;
+    }
+  }
+}
+
+
+
+//prints the x and y coordinates of a point
+void printarray(double *w, int z){
+  int i;
+  for (i = 0; i < z; i++){
+    printf("x%d: %lf\n", i, w[i]);
+  }
+}
+
 
 //click a point and it saves it into an array
 int clickAndSave(double x[100], double y[100]){
@@ -24,6 +51,8 @@ int clickAndSave(double x[100], double y[100]){
       // printf(" %d\n", i);
     }
   }
+  sort(x, i);
+  printarray(x, i);
   return i;
 }
 
@@ -38,32 +67,6 @@ void myPolygon(double x[100], double y[100], int n){
   }
 }
 
-
-//sorts the values of an array
-void sort(double *x, int m){
-  int k, s, i;
-  double temp;
-  for (i = 0; i < m; i++){
-    s = i;
-    for (k = i + 1; k < m; k++){
-      if (x[k] < x[s]){
-	s = k;
-      }
-      temp = x[i];
-      x[i] = x[s];
-      x[s] = temp;
-    }
-  }
-}
-
-
-//prints the x and y coordinates of a point
-void printarray(double *w, int z){
-  int i;
-  for (i = 0; i < z; i++){
-    printf("x%d: %lf\n", i, w[i]);
-  }
-}
 
 //finds the largest value in array
 int findlargest(double *y, int z){
@@ -96,6 +99,9 @@ int findsmallest(double *y, int z){
 //Points slope form; returns the new x coordinate i.e. the intersection
 double find_x(double xknown, double yknown, double slope, double newy){
   double newx = newy - yknown;
+  if (slope == 0){
+    slope = slope + .001;
+  }
   newx = newx / slope;
   return newx + xknown;
 }
@@ -116,12 +122,11 @@ void getslope(double *x, double *y, int z, double *slope){
 void fillgon(double *x, double *y, int z, double *slope){
   double newx[z * 2], tempx;
   int i, j, k;
-  int ly_pos = findlargest(y, z); int sy_pos = findsmallest(y,z); //large y & small y
-  int lx_pos = findlargest(x, z); int sx_pos = findsmallest(x,z); //large x & small x
+  int ly_pos = findlargest(y, z); int sy_pos = findsmallest(y,z); 
+  int lx_pos = findlargest(x, z); int sx_pos = findsmallest(x,z);
 
-  
-  for (j = (int) y[sy_pos] - 1; j < y[ly_pos]; j++){
-    for (i = 0; i < z; i++){
+  for (i = 0; i < z; i++){
+    for (j = (int) y[sy_pos] - 1; j < y[ly_pos]; j++){
       G_rgb(1.0/i, .01/i, 1.0/i);
       tempx = find_x(x[i], y[i], slope[i], j);
       
@@ -155,7 +160,7 @@ int main()
 
 
   G_init_graphics(WIDTH, HEIGHT);
-  G_rgb(.1,0,0);
+  G_rgb(.1, 0, 0);
   G_clear();
   
   G_rgb(1,1,1);
@@ -167,7 +172,7 @@ int main()
   anom = clickAndSave(ax, ay);
   myPolygon(ax,ay,anom); 
   getslope(ax, ay, anom ,slope);
-  fillgon(ax,ay, anom, slope);
+  //fillgon(ax,ay, anom, slope);
 
 
 

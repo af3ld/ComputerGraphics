@@ -1,14 +1,14 @@
 
 #include <FPT.h>
 
-typedef struct { double r, a, b; } tEquation;
 
 //Points slope form; returns the new x coordinate
 double f_intersect(double x1, double y1, double x2, double y2
 		   , double *c, double slope){
   //(y1 – y2)x + (x2 – x1)y + (x1*y2 – x2*y1) = 0
+  
 
-
+  return 3.00;
   
 }
 
@@ -20,7 +20,6 @@ int Clip_Polygon_Against_Convex_Window(double *px, double *py, int pn,
   double slope = (py[1] - py[0]) / (px[1] - px[0]);
   printf("slope = %lf\n", slope);
   
-  -44.3940 = 50*a + 37*b + c
   return 1;
 }
 

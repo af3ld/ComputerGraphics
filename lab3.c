@@ -150,25 +150,14 @@ void drawit(int i){
 }
 
 //controls the movement of the object
-//Swatch == 0, sets up moving the object to the center, scale, and back
-//to the center of the window
-//Swatch == 0, sets up the rotate function
-void movement(int i, double sf, double m[3][3], double minv[3][3], int swatch){
-  if (swatch == 0){
-    
-    D2d_translate(m, minv, -centerx, -centery);
-    D2d_scale(m, minv, sf, sf);
-    D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
-    D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
-  } else if (swatch == 1) {
-    
-    D2d_translate(m, minv, -centerx, -centery);
-    D2d_rotate(m, minv, M_PI/45);
-    D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
-    D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
-  }
+void movement(int i, double sf, double m[3][3], double minv[3][3]){
 
+  D2d_translate(m, minv, -centerx, -centery);
+  D2d_scale(m, minv, sf, sf);
+  D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
+  D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
 }
+
 
 //writes the opening instructions
 void welcome(int i){
@@ -196,41 +185,46 @@ void clipping(double *clipx, double *clipy){
 
 int main(int argc, char **argv){
   char key, c;  FILE *g;
-  double m[3][3], minv[3][3], clipx[100], clipy[100], sf;
+  double m[3][3], minv[3][3], sf, clipx[100], clipy[100];
   int cc;
   int inner_cycle = 1;
 
- for (cc = 1; cc < argc; cc++){
-      g = fopen(argv[cc], "r"); //opens a file; r = read only
-      if (g == NULL){	//if the file is empty, it will let me know
-	printf("can't open (1)\n");
-	exit(1);
-      } else {
-	readobject(g, cc);
+  for (cc = 1; cc < argc; cc++){
+    g = fopen(argv[cc], "r"); //opens a file; r = read only
+    if (g == NULL){	//if the file is empty, it will let me know
+      printf("can't open (1)\n");
+      exit(1);
+    } else {
+      readobject(g, cc);
 	
-	D2d_make_identity(m); D2d_make_identity(minv);
-	sf = boundingbox(cc); //Remember, sf == scale factor
-        movement(cc, sf, m, minv, 0); //(arg, scale, m, m inverse)
-      }
+      D2d_make_identity(m); D2d_make_identity(minv);
+      sf = boundingbox(cc); //Remember, sf == scale factor
+      movement(cc, sf, m, minv); //(arg, scale, m, m inverse)
     }
-  
+  }
   
   welcome(argc - 1);
   scanf("%c", &key);
   int i = key - '0';
-
   
   if (i < argc && i > 0){
-  G_init_graphics(WIDTH,HEIGHT);
+    G_init_graphics(WIDTH,HEIGHT);
 
-    while (inner_cycle){
-      G_rgb(1,1,1);
-      G_clear();
-      D2d_make_identity(m); D2d_make_identity(minv);
+    D2d_make_identity(m); D2d_make_identity(minv);
+    D2d_translate(m, minv, -WIDTH / 2, -HEIGHT / 2);
+    D2d_rotate(m, minv, M_PI/45);
+    D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
 
-      sf = boundingbox(i); //Remember, sf == scale factor
-      movement(i, sf, m, minv, 1);
-      drawit(i);
+  while (inner_cycle){
+    G_rgb(1,1,1);
+    G_clear();
+    
+    D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+      
+    drawit(i);
+ 
+    G_rgb(0,0,0);
+    G_fill_circle(WIDTH/2, HEIGHT/2, 3);
       
       c = G_wait_key();
       cc = c - '0';

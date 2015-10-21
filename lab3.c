@@ -28,10 +28,12 @@ int clickAndSave(double *x, double *y){
   double ca[2];
   int i = 0;
   int going = 1;
+  G_rgb(0,0,0);;
+  G_draw_string("Click here to end clipping", 0,0);
   while (going){
     G_wait_click(ca);
     //printf("%lf, %lf\n", ca[0], ca[1]);
-    if (ca[0] < 75 & ca[1] < 75){
+    if (ca[0] < 260 & ca[1] < 15){
       going = 0;
       x[i] = x[0];
       y[i] = y[0];
@@ -39,6 +41,8 @@ int clickAndSave(double *x, double *y){
     }else{ 
       x[i] = ca[0];
       y[i] = ca[1];
+      G_rgb(0,1,1);
+      G_circle(x[i], y[i], 1);
       G_rgb(0,0,0);
       G_circle(x[i], y[i], 2);
       i++;
@@ -98,17 +102,6 @@ double boundingbox(int i){
 }
 
 
-//draws the bounding box
-void draw_boundingbox(int i){
-  boundingbox(i);
-  G_rgb(1,0,0);
-  
-  G_rectangle(smallx, smally, boxwidth, boxheight);
-  G_line(smallx, smally, bigx, bigy);
-  G_line(smallx, bigy, bigx, smally);
-}
-
-
 //reads the file and attaches the correct variable to each input
 void readobject(FILE *g, int i){
   int k, j;
@@ -156,11 +149,9 @@ void drawit(int i){
   }
 }
 
+//controls the movement of the object
+void movement(int i, double sf, double m[3][3], double minv[3][3]){
 
-//moves the image to (0,0),
-//then scales, and moves it to center of window
-void trans_scale_trans(int i, double sf,  double m[3][3], double minv[3][3]){
-  //printf("sf: %lf, center: (%d,%d)\n", sf, centerx, centery);
   D2d_translate(m, minv, -centerx, -centery);
   D2d_scale(m, minv, sf, sf);
   D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
@@ -181,45 +172,59 @@ void welcome(int i){
   printf("\nthen press TAB to begin clipping\n");
 }
 
+//the clipping container
+void clipping(double *clipx, double *clipy){
+  
+  int temp_i = clickAndSave(clipx, clipy);
+  myPolygon(clipx, clipy, temp_i);
+  G_wait_key();
+
+}
+
 
 
 int main(int argc, char **argv){
   char key, c;  FILE *g;
-  double m[3][3], minv[3][3], clipx[100], clipy[100], sf;
+  double m[3][3], minv[3][3], sf, clipx[100], clipy[100];
   int cc;
   int inner_cycle = 1;
 
   for (cc = 1; cc < argc; cc++){
-      g = fopen(argv[cc], "r"); //opens a file; r = read only
-    
-      if (g == NULL){	//if the file is empty, it will let me know
-	printf("can't open (1)\n");
-	exit(1);
-      } else {
-	readobject(g, cc);
-
-      }
+    g = fopen(argv[cc], "r"); //opens a file; r = read only
+    if (g == NULL){	//if the file is empty, it will let me know
+      printf("can't open (1)\n");
+      exit(1);
+    } else {
+      readobject(g, cc);
+	
+      D2d_make_identity(m); D2d_make_identity(minv);
+      sf = boundingbox(cc); //Remember, sf == scale factor
+      movement(cc, sf, m, minv); //(arg, scale, m, m inverse)
     }
+  }
   
   welcome(argc - 1);
   scanf("%c", &key);
   int i = key - '0';
-
   
   if (i < argc && i > 0){
-  G_init_graphics(WIDTH,HEIGHT);
+    G_init_graphics(WIDTH,HEIGHT);
 
-    while (inner_cycle){
-      G_rgb(1,1,1);
-      G_clear();
-      D2d_make_identity(m); D2d_make_identity(minv);
+    D2d_make_identity(m); D2d_make_identity(minv);
+    D2d_translate(m, minv, -WIDTH / 2, -HEIGHT / 2);
+    D2d_rotate(m, minv, M_PI/45);
+    D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
 
-      sf = boundingbox(i); //Remember, sf == scale factor
-      D2d_rotate(m, minv, M_PI/45);
-      trans_scale_trans(i,sf, m, minv); //(arg, scale, m, m inverse)
-     
-      draw_boundingbox(i);
-      drawit(i);
+  while (inner_cycle){
+    G_rgb(1,1,1);
+    G_clear();
+    
+    D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
+      
+    drawit(i);
+ 
+    G_rgb(0,0,0);
+    G_fill_circle(WIDTH/2, HEIGHT/2, 3);
       
       c = G_wait_key();
       cc = c - '0';
@@ -231,9 +236,8 @@ int main(int argc, char **argv){
       }else if (cc == -39){
 	printf("coolio\n");
 	inner_cycle = 0;
-	int temp_i = clickAndSave(clipx, clipy);
-	myPolygon(clipx, clipy, temp_i);
-	G_wait_key();
+
+	clipping(clipx, clipy);
       } else{
 	printf("can't open (2)\n");
 	exit(1);

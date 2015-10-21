@@ -2,13 +2,39 @@
 
 int HEIGHT = 600; int WIDTH = 600;
 
+//sorts the values of an array
+void sort(double *x, int m){
+  int k, s, i;
+  double temp;
+  for (i = 0; i < m; i++){
+    s = i;
+    for (k = i + 1; k < m; k++){
+      if (x[k] < x[s]){
+	s = k;
+      }
+      temp = x[i];
+      x[i] = x[s];
+      x[s] = temp;
+    }
+  }
+}
+
+
+//prints the x and y coordinates of a point
+void printarray(double *w, int z){
+  int i;
+  for (i = 0; i < z; i++){
+    printf("x%d: %lf\n", i, w[i]);
+  }
+}
+
 
 //click a point and it saves it into an array
 int clickAndSave(double x[100], double y[100]){
   double ca[2];
   int i = 0;
   int going = 1;
-  while (going == 1){
+  while (going){
     G_wait_click(ca);
     //printf("%lf, %lf\n", ca[0], ca[1]);
     if (ca[0] < 75 & ca[1] < 75){
@@ -36,37 +62,11 @@ void myPolygon(double x[100], double y[100], int n){
     } 
     i++;
   }
-  }
-
-
-//sorts the values of an array
-void sort(double *x, int m){
-  int k, s, i;
-  double temp;
-  for (i = 0; i < m; i++){
-    s = i;
-    for (k = i + 1; k < m; k++){
-      if (x[k] < x[s]){
-	s = k;
-      }
-      temp = x[i];
-      x[i] = x[s];
-      x[s] = temp;
-    }
-  }
 }
 
-
-//prints the x and y coordinates of a point
-void printarray(double *w, int z){
-  int i;
-  for (i = 0; i < z; i++){
-    printf("x%d: %lf\n", i, w[i]);
-  }
-}
 
 //finds the largest value in array
-double findlargest(double *y, int z){
+int findlargest(double *y, int z){
   int position = 0;
   double temp = 0;
   for(int i = 0; i < z; i++){
@@ -80,7 +80,7 @@ double findlargest(double *y, int z){
 
 
 //finds the smallest in array
-double findsmallest(double *y, int z){
+int findsmallest(double *y, int z){
   int position = 0;
   double temp = HEIGHT;
   for(int i = 0; i < z; i++){
@@ -93,12 +93,16 @@ double findsmallest(double *y, int z){
 }
 
 
-//Points slope form; returns the new x coordinate
+//Points slope form; returns the new x coordinate i.e. the intersection
 double find_x(double xknown, double yknown, double slope, double newy){
   double newx = newy - yknown;
+  if (slope == 0){
+    slope = slope + .001;
+  }
   newx = newx / slope;
   return newx + xknown;
 }
+
 
 //gets the slope of all the lines; returns them via modified array
 void getslope(double *x, double *y, int z, double *slope){
@@ -109,22 +113,40 @@ void getslope(double *x, double *y, int z, double *slope){
   slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
 }
 
-
+int signswap(double *y, int i){
+  if (y[i-1] > y[i]){
+    return -1;
+  } else{
+    return 1;
+    }
+}
 
 //fills the polygon
 //currently not complete
 void fillgon(double *x, double *y, int z, double *slope){
-  double newx, newy;
-  int largest_y_pos = findlargest(y, z); int smallest_y_pos = findsmallest(y,z);
-  sort(x, z);
-  printarray(x, z);
-  
-  //for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
-  //double start_x = find_x(x[0], y[0], slope[0], i);
-  //double end_x = find_x(x[1], y[1], slope[0], i);
-  //printf("start:%lf, end: %lf\n", start_x, end_x);
-  //G_line(start_x, i, end_x, i);  
-  //} 
+  double newx[z * 2], tempx;
+  int i, j, k;
+  int ly_pos = findlargest(y, z); int sy_pos = findsmallest(y,z); 
+  int lx_pos = findlargest(x, z); int sx_pos = findsmallest(x,z);
+
+  for (i = 0; i < z; i++){
+    for (j = (int) y[sy_pos] - 1; j <= y[i + 1]; j++){
+      //G_rgb(1.0/i, .01/i, 1.0/i);
+      
+      tempx = find_x(x[i], y[i], slope[i], j);
+      if (tempx < x[lx_pos] && tempx > x[sx_pos]){
+	newx[i] = tempx;
+	//printf("x%d: %lf\n",i, newx[i]);
+	G_circle(newx[i], j, 2);
+      }
+    }
+    printf("y = %d, y_finish:%lf \n", j,  y[i + signswap(y, i)]);
+    G_wait_key();
+    //if (isnan(newx[0]) == 0 && isnan(newx[1]) == 0){
+    //printf("x0: %lf, x1: %lf\n", newx[0], newx[1]);
+    //G_line(newx[0], j, newx[1], j);
+    //}
+  }
 }
 
 
@@ -139,12 +161,12 @@ int main()
 
 
   G_init_graphics(WIDTH, HEIGHT);
-  G_rgb(0,0,0);
+  G_rgb(.1, 0, 0);
   G_clear();
   
   G_rgb(1,1,1);
-  G_fill_rectangle(0,0,77,77);
-  G_rgb(.2,.6,.82);
+  G_fill_rectangle(0, 0,77,77);
+  G_rgb(0.2, 0.6, 0.82);
   G_fill_rectangle(0,0,75,75);
   G_rgb(1,1,1);
 

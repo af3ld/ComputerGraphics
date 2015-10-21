@@ -1,33 +1,27 @@
 
 #include <FPT.h>
 
+typedef struct { double r, a, b; } tEquation;
 
-int Clip_Polygon_Against_Convex_Window(double px, double py, int pn,
-					double wx, double xy, int wn){
-  if(x2-x1){
-    m=(y2-y1)/(x2-x1);
-  } else {
-    m=100000;
-  }
-  if(x1 >= xmin && x2 >= xmin){
-    arr[k]=x2;
-    arr[k+1]=y2;
-    k+=2;
-  }
-  if(x1 < xmin && x2 >= xmin){
-    
-    arr[k]=xmin;
-    arr[k+1]=y1+m*(xmin-x1);
-    arr[k+2]=x2;
-    arr[k+3]=y2;
-    k+=4;
-  }
-  if(x1 >= xmin  && x2 < xmin){
+//Points slope form; returns the new x coordinate
+double f_intersect(double x1, double y1, double x2, double y2
+		   , double *c, double slope){
+  //(y1 – y2)x + (x2 – x1)y + (x1*y2 – x2*y1) = 0
 
-    arr[k]=xmin;
-    arr[k+1]=y1+m*(xmin-x1);
-    k+=2;
-  }
+
+  
+}
+
+
+int Clip_Polygon_Against_Convex_Window(double *px, double *py, int pn,
+					double *wx, double *wy, int wn){
+  double coords[2];
+  int a,b,c;
+  double slope = (py[1] - py[0]) / (px[1] - px[0]);
+  printf("slope = %lf\n", slope);
+  
+  -44.3940 = 50*a + 37*b + c
+  return 1;
 }
 
 
@@ -62,8 +56,7 @@ int main()
   q = G_wait_key() ;
 
 
-  pn = Clip_Polygon_Against_Convex_Window (px, py, pn,
-					    wx, wy, wn) ;  
+  pn = Clip_Polygon_Against_Convex_Window (px, py, pn, wx, wy, wn) ;
 
   G_rgb (1,1,0) ;
   G_fill_polygon(px,py,pn) ;

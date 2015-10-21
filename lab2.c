@@ -53,7 +53,6 @@ double boundingbox(int i){
 
 //draws the bounding box
 void draw_boundingbox(int i){
-  boundingbox(i);
   G_rgb(1,0,0);
   //printf("small: (%lf,%lf), big: (%lf,%lf)\n", smallx, smally, bigx, bigy);
   G_rectangle(smallx, smally, boxwidth, boxheight);
@@ -110,7 +109,9 @@ void drawit(int i){
 }
 
 //controls the movement of the object
-//When swatch == 0, sets up the 
+//Swatch == 0, sets up moving the object to the center, scale, and back
+//to the center of the window
+//Swatch == 0, sets up the rotate function
 void movement(int i, double sf, double m[3][3], double minv[3][3], int swatch){
   if (swatch == 0){
     
@@ -121,7 +122,7 @@ void movement(int i, double sf, double m[3][3], double minv[3][3], int swatch){
   } else if (swatch == 1) {
     
     D2d_translate(m, minv, -centerx, -centery);
-    D2d_rotate(m, minv, M_PI/90);
+    D2d_rotate(m, minv, M_PI/45);
     D2d_translate(m, minv, WIDTH / 2, HEIGHT / 2);
     D2d_mat_mult_points(x[i],y[i], m, x[i],y[i], points[i]);
   }
@@ -177,12 +178,13 @@ int main(int argc, char **argv){
       D2d_make_identity(m); D2d_make_identity(minv);
 
       sf = boundingbox(i); //Remember, sf == scale factor
-      movement(i, sf, m, minv, 1);
       draw_boundingbox(i);
+      movement(i, sf, m, minv, 1);
+      //draw_boundingbox(i);
       drawit(i);
       
-      //G_rgb(0,0,0);
-      //G_fill_circle(WIDTH/2, HEIGHT/2, 3);
+      G_rgb(0,0,0);
+      G_fill_circle(WIDTH/2, HEIGHT/2, 3);
       
       c = G_wait_key();
       cc = c - '0';

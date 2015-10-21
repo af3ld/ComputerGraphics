@@ -185,7 +185,7 @@ void welcome(int i){
 
 //the clipping container
 void clipping(double *clipx, double *clipy){
-
+  
   int temp_i = clickAndSave(clipx, clipy);
   myPolygon(clipx, clipy, temp_i);
   G_wait_key();
@@ -244,8 +244,6 @@ int main(int argc, char **argv){
 	inner_cycle = 0;
 
 	clipping(clipx, clipy);
-	
-	inner_cycle = 1;
       } else{
 	printf("can't open (2)\n");
 	exit(1);

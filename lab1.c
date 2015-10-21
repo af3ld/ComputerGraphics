@@ -20,7 +20,6 @@ void sort(double *x, int m){
 }
 
 
-
 //prints the x and y coordinates of a point
 void printarray(double *w, int z){
   int i;
@@ -35,7 +34,7 @@ int clickAndSave(double x[100], double y[100]){
   double ca[2];
   int i = 0;
   int going = 1;
-  while (going == 1){
+  while (going){
     G_wait_click(ca);
     //printf("%lf, %lf\n", ca[0], ca[1]);
     if (ca[0] < 75 & ca[1] < 75){
@@ -51,8 +50,6 @@ int clickAndSave(double x[100], double y[100]){
       // printf(" %d\n", i);
     }
   }
-  sort(x, i);
-  printarray(x, i);
   return i;
 }
 
@@ -116,6 +113,13 @@ void getslope(double *x, double *y, int z, double *slope){
   slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
 }
 
+int signswap(double *y, int i){
+  if (y[i-1] > y[i]){
+    return -1;
+  } else{
+    return 1;
+    }
+}
 
 //fills the polygon
 //currently not complete
@@ -126,21 +130,18 @@ void fillgon(double *x, double *y, int z, double *slope){
   int lx_pos = findlargest(x, z); int sx_pos = findsmallest(x,z);
 
   for (i = 0; i < z; i++){
-    for (j = (int) y[sy_pos] - 1; j < y[ly_pos]; j++){
-      G_rgb(1.0/i, .01/i, 1.0/i);
-      tempx = find_x(x[i], y[i], slope[i], j);
+    for (j = (int) y[sy_pos] - 1; j <= y[i + 1]; j++){
+      //G_rgb(1.0/i, .01/i, 1.0/i);
       
+      tempx = find_x(x[i], y[i], slope[i], j);
       if (tempx < x[lx_pos] && tempx > x[sx_pos]){
 	newx[i] = tempx;
 	//printf("x%d: %lf\n",i, newx[i]);
 	G_circle(newx[i], j, 2);
       }
     }
-    //sort(newx, i);
-    //printarray(newx, i);
-
- 
-
+    printf("y = %d, y_finish:%lf \n", j,  y[i + signswap(y, i)]);
+    G_wait_key();
     //if (isnan(newx[0]) == 0 && isnan(newx[1]) == 0){
     //printf("x0: %lf, x1: %lf\n", newx[0], newx[1]);
     //G_line(newx[0], j, newx[1], j);
@@ -164,15 +165,15 @@ int main()
   G_clear();
   
   G_rgb(1,1,1);
-  G_fill_rectangle(0,0,77,77);
-  G_rgb(.2,.6,.82);
+  G_fill_rectangle(0, 0,77,77);
+  G_rgb(0.2, 0.6, 0.82);
   G_fill_rectangle(0,0,75,75);
   G_rgb(1,1,1);
 
   anom = clickAndSave(ax, ay);
   myPolygon(ax,ay,anom); 
   getslope(ax, ay, anom ,slope);
-  //fillgon(ax,ay, anom, slope);
+  fillgon(ax,ay, anom, slope);
 
 
 

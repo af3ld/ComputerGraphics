@@ -4,22 +4,30 @@
 
 //Points slope form; returns the new x coordinate
 double f_intersect(double x1, double y1, double x2, double y2
-		   , double *c, double slope){
+		   , double *c){
   //(y1 – y2)x + (x2 – x1)y + (x1*y2 – x2*y1) = 0
+  //http://math.stackexchange.com/questions/388873/to-find-the-x-and-y-intercepts-of-the-line-axbyc-0
   
+  double yprime, xprime;
+  yprime = xprime = ((x1*y2) - (x2*y1)) * -1;
+  xprime = xprime / (y1 - y2);
+  yprime = yprime / (x2 - x1);
+  printf("(x',y'): (%lf,%lf)", xprime, yprime);
 
+  G_rgb(0,0,0);
+  G_fill_circle(xprime, yprime, 2);
   return 3.00;
   
 }
 
 
 int Clip_Polygon_Against_Convex_Window(double *px, double *py, int pn,
-					double *wx, double *wy, int wn){
+					double *wx, double *wy, int wn)
+{
+
   double coords[2];
-  int a,b,c;
-  double slope = (py[1] - py[0]) / (px[1] - px[0]);
-  printf("slope = %lf\n", slope);
-  
+  f_intersect(px[1], py[1], wx[1], wy[1], coords);
+
   return 1;
 }
 

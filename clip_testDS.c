@@ -3,21 +3,23 @@
 
 
 //Points slope form; returns the new x coordinate
-double f_intersect(double x1, double y1, double x2, double y2
-		   , double *c){
+double f_intersect(double *px, double *py, double *wx, double *wy, double *c){
   //(y1 – y2)x + (x2 – x1)y + (x1*y2 – x2*y1) = 0
-  //http://math.stackexchange.com/questions/388873/to-find-the-x-and-y-intercepts-of-the-line-axbyc-0
-  
-  double yprime, xprime;
-  yprime = xprime = ((x1*y2) - (x2*y1)) * -1;
-  xprime = xprime / (y1 - y2);
-  yprime = yprime / (x2 - x1);
-  printf("(x',y'): (%lf,%lf)", xprime, yprime);
+  double yprime, xprime, pb, wb;
 
-  G_rgb(0,0,0);
-  G_fill_circle(xprime, yprime, 2);
-  return 3.00;
+  double pslope = (py[1] - py[0]) / (px[1] - px[0]);
+  double wslope = (wy[1] - wy[0]) / (wx[1] - wx[0]);
+
+  double c1 = py[0] - pslope * px[0];
+  double c2 = wy[0] - wslope * wx[0];
+
+  xprime = (c2 - c1) / (pslope - wslope);
+  yprime = pslope * xprime + c1;
   
+  printf("Intersecting Point: = %lf, %lf\n", xprime, yprime);
+  G_fill_circle(xprime, yprime, 2);
+
+  return 3.00;  
 }
 
 
@@ -26,8 +28,9 @@ int Clip_Polygon_Against_Convex_Window(double *px, double *py, int pn,
 {
 
   double coords[2];
-  f_intersect(px[1], py[1], wx[1], wy[1], coords);
-
+  for (int h = 0; h < 4; h++){
+  f_intersect(px, py, wx, wy, coords);
+  }
   return 1;
 }
 

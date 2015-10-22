@@ -1,5 +1,7 @@
 
 #include <FPT.h>
+  //http://www.softwareandfinance.com/Turbo_C/Intersection_Two_lines_EndPoints.html
+
 
 
 void f_intersect(double px_start, double py_start,
@@ -7,6 +9,7 @@ void f_intersect(double px_start, double py_start,
 		 double wx_start, double wy_start,
 		 double wx_end, double wy_end, double *c){
 
+  
   double yprime, xprime;
   
   double pslope = (py_start - py_end) / (px_start - px_end);
@@ -17,9 +20,9 @@ void f_intersect(double px_start, double py_start,
   if( (pslope - wslope) == 0){
         printf("No Intersection between the lines\n");
   } else {
-  xprime = (c2 - c1) / (pslope - wslope);
-  yprime = pslope * xprime + c1;
-  c[0] = xprime; c[1] = yprime;
+    xprime = (c2 - c1) / (pslope - wslope);
+    yprime = pslope * xprime + c1;
+    c[0] = xprime; c[1] = yprime;
   }
 }
 
@@ -27,12 +30,22 @@ void f_intersect(double px_start, double py_start,
 int Clip_Polygon_Against_Convex_Window(double *px, double *py, int pn,
 					double *wx, double *wy, int wn)
 {
+  int j;
 
-  double coords[2];
-  //f_intersect(px[0], py[0], px[1], py[1], wx[0], wy[0], wx[1], wy[1], coords);
-  printf("Intersecting Point: = (%lf, %lf)\n", coords[0], coords[1]);
-  G_rgb(1,1,1);
-  G_fill_circle(coords[0], coords[1], 2);
+  double coord[2];
+  for (int i = 0; i < pn - 1; i++){
+    for (j = 0; j < wn - 1; j++){
+      f_intersect(px[i], py[i], px[i + 1], py[i + 1], wx[j]
+		  , wy[j], wx[j + 1], wy[j + 1], coord);
+      if (coord[0] > 1 && coord[1] > 1 && coord[0] < 700 && coord[1] < 700){
+	printf("Intersection: = (%lf, %lf)\n", coord[0], coord[1]);
+	G_rgb(1,1,1);
+	G_fill_circle(coord[0], coord[1], 2);
+	G_wait_key();
+      }
+    }
+  }
+  
   
   return 1;
 }

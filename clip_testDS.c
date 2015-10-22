@@ -2,24 +2,25 @@
 #include <FPT.h>
 
 
-//Points slope form; returns the new x coordinate
-double f_intersect(double *px, double *py, double *wx, double *wy, double *c){
-  //(y1 – y2)x + (x2 – x1)y + (x1*y2 – x2*y1) = 0
-  double yprime, xprime, pb, wb;
+void f_intersect(double px_start, double py_start,
+		 double px_end, double py_end,
+		 double wx_start, double wy_start,
+		 double wx_end, double wy_end, double *c){
 
-  double pslope = (py[1] - py[0]) / (px[1] - px[0]);
-  double wslope = (wy[1] - wy[0]) / (wx[1] - wx[0]);
-
-  double c1 = py[0] - pslope * px[0];
-  double c2 = wy[0] - wslope * wx[0];
-
+  double yprime, xprime;
+  
+  double pslope = (py_start - py_end) / (px_start - px_end);
+  double wslope = (wy_start - wy_end) / (wx_start - wx_end);
+  double c1 = py_end - pslope * px_end;
+  double c2 = wy_end - wslope * wx_end;
+  
+  if( (pslope - wslope) == 0){
+        printf("No Intersection between the lines\n");
+  } else {
   xprime = (c2 - c1) / (pslope - wslope);
   yprime = pslope * xprime + c1;
-  
-  printf("Intersecting Point: = %lf, %lf\n", xprime, yprime);
-  G_fill_circle(xprime, yprime, 2);
-
-  return 3.00;  
+  c[0] = xprime; c[1] = yprime;
+  }
 }
 
 
@@ -28,9 +29,11 @@ int Clip_Polygon_Against_Convex_Window(double *px, double *py, int pn,
 {
 
   double coords[2];
-  for (int h = 0; h < 4; h++){
-  f_intersect(px, py, wx, wy, coords);
-  }
+  //f_intersect(px[0], py[0], px[1], py[1], wx[0], wy[0], wx[1], wy[1], coords);
+  printf("Intersecting Point: = (%lf, %lf)\n", coords[0], coords[1]);
+  G_rgb(1,1,1);
+  G_fill_circle(coords[0], coords[1], 2);
+  
   return 1;
 }
 

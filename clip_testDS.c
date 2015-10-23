@@ -12,9 +12,9 @@ void f_intersect(double px_start, double py_start,
   
   double yprime, xprime;
   
-  double pslope = (py_start - py_end) / (px_start - px_end);
-  double wslope = (wy_start - wy_end) / (wx_start - wx_end);
-  double c1 = py_end - pslope * px_end;
+  double pslope = (py_end - py_start) / (px_end - px_start);
+  double wslope = (wy_end - wy_start) / (wx_end - wx_start);
+  double c1 = py_end - pslope * px_end; //y = mx + c
   double c2 = wy_end - wslope * wx_end;
   
   if( (pslope - wslope) == 0){
@@ -28,25 +28,28 @@ void f_intersect(double px_start, double py_start,
 
 
 int Clip_Polygon_Against_Convex_Window(double *px, double *py, int pn,
-					double *wx, double *wy, int wn)
-{
-  int j;
-
+				       double *wx, double *wy, int wn){
+  int j, i;
   double coord[2];
-  for (int i = 0; i < pn - 1; i++){
-    for (j = 0; j < wn - 1; j++){
-      f_intersect(px[i], py[i], px[i + 1], py[i + 1], wx[j]
-		  , wy[j], wx[j + 1], wy[j + 1], coord);
+  
+  for (i = 0; i <= pn; i++){
+    for (j = 0; j <= wn; j++){
+      
+
+      f_intersect(px[i], py[i], px[i + 1], py[i + 1],
+		  wx[j], wy[j], wx[j + 1], wy[j + 1], coord);
+      
+       	 
       if (coord[0] > 1 && coord[1] > 1 && coord[0] < 700 && coord[1] < 700){
-	printf("Intersection: = (%lf, %lf)\n", coord[0], coord[1]);
+	printf("Intersect: (%.2lf, %.2lf), w:%d, p:%d\n", coord[0],
+	       coord[1], j, i);
 	G_rgb(1,1,1);
 	G_fill_circle(coord[0], coord[1], 2);
 	G_wait_key();
       }
     }
   }
-  
-  
+
   return 1;
 }
 

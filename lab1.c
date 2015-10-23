@@ -2,8 +2,26 @@
 
 int HEIGHT = 600; int WIDTH = 600;
 
-
-
+void container(double x1, double y1, double x2, double y2, double *direction){
+  double left, top, right, bottom;
+    if(x1 < x2){
+        left = x1;
+        right = x2;
+    } else {
+        left = x2;
+        right = x1;
+    }
+    if(y1 > y2){
+        top = y1;
+        bottom = y2;
+    } else {
+        top = y2;
+        bottom = y1;
+    }
+    //printf("l:%.2lf, r:%.2lf, t:%.2lf, b:%.2lf\n", left, right, top, bottom);
+    direction[0] = top; direction[1] = bottom;
+    direction[2] = left; direction[3] = right;
+}
 
 //click a point and it saves it into an array
 int clickAndSave(double x[100], double y[100]){
@@ -111,22 +129,32 @@ void getslope(double *x, double *y, int z, double *slope){
   slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
 }
 
-
+int looper(int i, int z){
+  if (i == z - 1){
+    return 0;
+  } else {
+    return i + 1;
+  }
+}
 
 //fills the polygon
 //currently not complete
 void fillgon(double *x, double *y, int z, double *slope){
-  double newx, newy;
+  double newx[100], tempx, direction[4]; //0=top; 1=bottom; 2=left; 3=right
   int largest_y_pos = findlargest(y, z); int smallest_y_pos = findsmallest(y,z);
-  sort(x, z);
-  printarray(x, z);
-  
-  //for(int i = (int) y[smallest_y_pos] - 1; i < y[largest_y_pos]; i++){
-  //double start_x = find_x(x[0], y[0], slope[0], i);
-  //double end_x = find_x(x[1], y[1], slope[0], i);
-  //printf("start:%lf, end: %lf\n", start_x, end_x);
-  //G_line(start_x, i, end_x, i);  
-  //} 
+
+  for (int i = 0; i < z; i++){
+    container(x[i],y[i], x[looper(i, z)], y[looper(i, z)], direction);
+    for (int j = (int) direction[1]; j <= direction[0]; j++){
+      //G_rgb(1.0/i, .01/i, 1.0/i);
+      tempx = find_x(x[i], y[i], slope[i], j);
+      if (tempx < direction[3] && tempx > direction[2]){
+	newx[i] = tempx;
+	//printf("x%d: %lf\n",i, newx[i]);
+	G_circle(newx[i], j, 2);
+      }
+    }
+  }
 }
 
 

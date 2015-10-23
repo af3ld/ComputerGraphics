@@ -1,11 +1,11 @@
-
 #include <FPT.h>
-  //http://www.softwareandfinance.com/Turbo_C/Intersection_Two_lines_EndPoints.html
+
 // Bounding Box For Line Segment
+//(x1,y1) = start of the line
+//(x2, y2) = the end of the line
 int pointincontainer(double x1, double y1, double x2, double y2,
-			 double point_x, double point_y){
+			 double xprime, double yprime){
     double left, top, right, bottom; 
-    
     if(x1 < x2){
         left = x1;
         right = x2;
@@ -13,16 +13,17 @@ int pointincontainer(double x1, double y1, double x2, double y2,
         left = x2;
         right = x1;
     }
-    if(y1 < y2){
+    if(y1 > y2){
         top = y1;
         bottom = y2;
     } else {
-        top = y1;
-        bottom = y2;
+        top = y2;
+        bottom = y1;
     }
-    if ((point_x+0.01) >= left && (point_x-0.01) <= right && 
-	(point_y+0.01) >= top && (point_y-0.01) <= bottom) {
-      
+    //printf("l:%lf, r:%lf, t:%lf, b:%lf\n", left, right, top, bottom);
+    //printf("x': %lf, y': %lf\n", xprime, yprime);
+    if ((xprime+0.01) >= left && (xprime-0.01) <= right && 
+	(yprime+0.01) <= top && (yprime-0.01) >= bottom) {
         return 1;
     } else {
         return 0;
@@ -39,31 +40,47 @@ void getslope(double *x, double *y, int z, double *slope){
   slope[i] = (y[0] - y[i]) / (x[0] - x[i]);
 }
 
-
-int f_intersect(double *px, double *py,
-		 double *wx, double *wy,
-		 double *pslope, double *wslope, double *c){
-
-  
-  double yprime, xprime;
-  
-  double c1 = py - pslope * px; //y = mx + c
-  double c2 = wy - wslope * wx;
-  
-  if ((pslope - wslope) == 0){
-        printf("Slope division = 0; ERROR!\n");
-	return 0;
-	
+int looper(int i, int n){
+  if (i == n - 1){
+    return 0;
   } else {
-    xprime = (c2 - c1) / (pslope - wslope);
-    yprime = pslope * xprime + c1;
-    
-    if(pointincontainer(px, py, x, y, xprime, yprime ) == 1 &&
-       pointincontainer(wx, wy, x, y, xprime, yprime ) == 1){
-      c[0] = xprime; c[1] = yprime;
-      return 1;
-    } else {
-      return 0:
+    return i + 1;
+  }
+}
+
+//finds the intersection of the two lines
+void f_intersect(double *px, double *py, int pn,
+		double *wx, double *wy, int wn, double *c){
+  int i, j;
+  double yprime, xprime, wslope[100], pslope[100], c1, c2;
+  getslope(px, py, pn, pslope);
+  getslope(wx, wy, wn, wslope);
+
+  for (i = 0; i < pn; i++){
+    for(j = 0; j < wn; j++){
+      c1 = py[i] - pslope[i] * px[i]; //y = mx + c -> c = y -mx
+      c2 = wy[j] - wslope[j] * wx[j];
+
+      if ((pslope[i] - wslope[j]) == 0){ //prevents divison by 0
+	printf("Slope division = 0; ERROR!\n"); 
+      } else {
+	xprime = (c2 - c1) / (pslope[i] - wslope[j]); //intersection of x
+	yprime = pslope[i] * xprime + c1; //intersection of y
+
+
+	
+	if(pointincontainer(px[i], py[i], px[looper(i, pn)], py[looper(i, pn)],
+			    xprime, yprime) == 1 &&
+	   pointincontainer(wx[j], wy[j],wx[looper(j, wn)], wy[looper(j, wn)],
+			    xprime, yprime ) == 1){
+
+	  printf("\nPolygon:\nstart: (%.2lf,%.2lf), end: (%.2lf,%.2lf), slope:%.2lf\n",px[i], py[i], px[looper(i, pn)], py[looper(i, pn)], pslope[i]);
+	  printf("Window:\nstart: (%.2lf,%.2lf), end: (%.2lf,%.2lf), slope:%.2lf\n\n",wx[j], wy[j], wx[looper(j, wn)], wy[looper(i, wn)], wslope[j]);
+	  c[0] = xprime; c[1] = yprime;
+	  G_rgb(1,1,1);
+	  G_fill_circle(xprime, yprime, 2);
+	}
+      }
     }
   }
 }
@@ -72,17 +89,10 @@ int f_intersect(double *px, double *py,
 int Clip_Polygon_Against_Convex_Window(double *px, double *py, int pn,
 				       double *wx, double *wy, int wn){
   int j, i;
-  double cd[2], wslope[100], pslope[100];
-  getslope(px, py, pn, pslope); 
-  getslope(wx, wy, wn, wslope);
+  double cd[100];
 
-  //for(i = 0; i <= pn; i++){
-    //for(j = 0; j <= wn; j++){
-  f_intersect(px, py, wx, wy, pslope, wslope, cd);
-  G_rgb(1,1,1);
-  G_fill_circle(cd[0], cd[1], 2);
-  //}
-  //}
+  f_intersect(px, py, pn, wx, wy, wn, cd);
+
   return 1;
 }
 

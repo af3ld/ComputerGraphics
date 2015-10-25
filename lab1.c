@@ -121,9 +121,10 @@ void fillgon(double *x, double *y, int z, double *slope){
   double newx[10000], newy[10000];
   int i, j, k, counter;
 
+
   for (i = 0; i < z; i++){
-    container(x[i],y[i], x[looper(i, z)], y[looper(i, z)], direction);
-    
+     container(x[i],y[i], x[looper(i, z)], y[looper(i, z)], direction);
+     //printf("largest y: %lf, smallest y: %lf\n", direction[0], direction[1]);
     for (j = (int) direction[1]; j <= direction[0]; j++){
       //G_rgb(1.0/i, .01/i, 1.0/i);
       tempx = find_x(x[i], y[i], slope[i], j);
@@ -137,15 +138,18 @@ void fillgon(double *x, double *y, int z, double *slope){
     //G_wait_key();
   }
   k = i * j;
+  counter = 0;
   sort(newy, newx, k);
-  for (i = 0; i < k; i++){
-    if (newx[i] > 0 && newy > 0){
-      printf("%d\n", i);
-      G_line(newx[i], newy[i], newx[i +1], newy[i +1]);
+  printarray(newx, newy, k);
+  for (i = 0; i < k; i+=2){
+    if (newx[i] > 0 && newy[i] > 0){
+      printf("%.2lf connects to %.2lf at %.2lf\n",
+	     newx[i], newx[i + 1], newy[i]);
+      counter++;
+      G_line(newx[i], newy[i], newx[i + 1], newy[i + 1]);
     }
   }
-  
-  printarray(newx, newy, k);
+  printf("\ncounter:%d\n", counter);
 
 }
 

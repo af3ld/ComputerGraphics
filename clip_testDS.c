@@ -1,4 +1,5 @@
 #include <FPT.h>
+int counter;
 
 // Bounding Box For Line Segment
 //(x1,y1) = start of the line
@@ -48,14 +49,16 @@ void getslope(double *x, double *y, int z, double *slope) {
 
 
 
-//finds the intersection of the two lines
+//finds the intersection of the all lines
+//returns intersection coordinates via array
 void f_intersect(double *px, double *py, int pn,
                  double *wx, double *wy, int wn, double *c) {
-  int i, j, counter;
+  int i, j;
   double yprime, xprime, wslope[100], pslope[100], c1, c2;
   getslope(px, py, pn, pslope);
   getslope(wx, wy, wn, wslope);
 
+  counter = 0;
   for (i = 0; i < wn; i++) {
     for (j = 0; j < pn; j++) {
       c1 = py[j] - pslope[j] * px[j]; //y = mx + c -> c = y -mx
@@ -71,20 +74,12 @@ void f_intersect(double *px, double *py, int pn,
                              xprime, yprime) == 1 &&
             pointincontainer(wx[i], wy[i], wx[looper(i, wn)], wy[looper(i, wn)],
                              xprime, yprime ) == 1) {
-
-          //printf("\nPolygon:\nstart: (%.2lf,%.2lf), end: (%.2lf,%.2lf),
-                 //slope:%.2lf\n", px[j], py[j], px[looper(j, pn)], py[looper(j, pn)],
-                 //pslope[j]);
-          //printf("Window:\nstart: (%.2lf,%.2lf), end:
-                 //(%.2lf,%.2lf), slope:%.2lf\n", wx[i], wy[i], wx[looper(i, wn)],
-                 //wy[looper(i, wn)], wslope[i]);    
-          printf("intersection x: %.2lf, y: %.2lf\n\n", xprime, yprime);
-          c[0] = xprime; c[1] = yprime;
+          c[counter] = xprime; c[counter + 1] = yprime;
+          counter += 2;
           G_rgb(1, 1, 1);
           G_fill_circle(xprime, yprime, 2);
         }
       }
-      G_wait_key();
     }
   }
 }
@@ -96,6 +91,15 @@ int Clip_Polygon_Against_Convex_Window(double *px, double *py, int pn,
   double cd[100];
 
   f_intersect(px, py, pn, wx, wy, wn, cd);
+  double cleaned_coords[counter + 1];
+  
+  for (i = 0; i < 100; i += 2) {
+    if (cd[i] > 0.1 && cd[i] < 700 && 0 == isnan(cd[i]) 
+      && cd[i + 1] > 0.1 && cd[i + 1] < 700 && isnan(cd[i + 1]) == 0) {
+      cleaned_coords[i] = cd[i]; 
+      cleaned_coords[i + 1] = cd[i + 1];
+    }
+  }
 
   return 1;
 }

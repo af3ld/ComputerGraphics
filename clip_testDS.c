@@ -1,5 +1,5 @@
 #include <FPT.h>
-int counter;
+int counter = 0;
 
 // Bounding Box For Line Segment
 //(x1,y1) = start of the line
@@ -58,7 +58,6 @@ void f_intersect(double *px, double *py, int pn,
   getslope(px, py, pn, pslope);
   getslope(wx, wy, wn, wslope);
 
-  counter = 0;
   for (i = 0; i < wn; i++) {
     for (j = 0; j < pn; j++) {
       c1 = py[j] - pslope[j] * px[j]; //y = mx + c -> c = y -mx
@@ -76,8 +75,6 @@ void f_intersect(double *px, double *py, int pn,
                              xprime, yprime ) == 1) {
           c[counter] = xprime; c[counter + 1] = yprime;
           counter += 2;
-          G_rgb(1, 1, 1);
-          G_fill_circle(xprime, yprime, 2);
         }
       }
     }
@@ -88,20 +85,25 @@ void f_intersect(double *px, double *py, int pn,
 int Clip_Polygon_Against_Convex_Window(double *px, double *py, int pn,
                                        double *wx, double *wy, int wn) {
   int j, i;
-  double cd[100];
+  double cd[100], final;
 
   f_intersect(px, py, pn, wx, wy, wn, cd);
-  double cleaned_coords[counter + 1];
-  
-  for (i = 0; i < 100; i += 2) {
-    if (cd[i] > 0.1 && cd[i] < 700 && 0 == isnan(cd[i]) 
-      && cd[i + 1] > 0.1 && cd[i + 1] < 700 && isnan(cd[i + 1]) == 0) {
-      cleaned_coords[i] = cd[i]; 
-      cleaned_coords[i + 1] = cd[i + 1];
-    }
+
+  double x[counter], y[counter]; //cleaning the array 
+  for (i = 0; i < pn; i++){
+    px[i] = 0.0;
+    py[i] = 0.0;
   }
 
-  return 1;
+  for (i = 0; i < 100; i += 2) {
+    if (cd[i] > 0.1 && cd[i] < 700 && 0 == isnan(cd[i])
+        && cd[i + 1] > 0.1 && cd[i + 1] < 700 && isnan(cd[i + 1]) == 0) {
+      px[i/2] = cd[i];
+      py[i/2] = cd[i + 1];
+      //printf("x:%.2lf, y:%.2lf\n", cd[i], cd[i + 1]);
+    }
+  }
+  return counter / 2;
 }
 
 
@@ -135,10 +137,14 @@ int main()
 
   q = G_wait_key() ;
 
-
   pn = Clip_Polygon_Against_Convex_Window (px, py, pn, wx, wy, wn) ;
 
   G_rgb (1, 1, 0) ;
+  for (int i = 0; i < pn; i++) {
+    G_fill_circle(px[i], py[i], 2);
+    printf("x:%.2lf, y:%.2lf\n", px[i], py[i]);
+  }
+
   G_fill_polygon(px, py, pn) ;
   q = G_wait_key() ;
 }

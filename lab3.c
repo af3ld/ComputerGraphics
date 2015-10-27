@@ -82,11 +82,11 @@ void f_intersect(double *px, double *py, int pn,
 
   for (i = 0; i < wn; i++) {
     for (j = 0; j < pn; j++) {
-      c1 = py[j] - pslope[j] * px[j]; //y = mx + c -> c = y -mx
+      c1 = py[j] - pslope[j] * px[j]; //y = mx + c - > c = y -mx
       c2 = wy[i] - wslope[i] * wx[i];
 
       if ((pslope[j] - wslope[i]) == 0) { //prevents divison by 0
-        printf("Slope division = 0; ERROR!\n");
+        printf("Slope division by 0; ERROR!\n");
       } else {
         xprime = (c2 - c1) / (pslope[j] - wslope[i]); //intersection of x
         yprime = pslope[j] * xprime + c1; //intersection of y
@@ -210,8 +210,6 @@ void readobject(FILE *g, int i) {
     //printf("(%lf, %lf, %lf)\n", red[i][k], green[i][k], blue[i][k]);
   }
 }
-
-
 
 //draws the image
 void drawit(int i) {

@@ -57,7 +57,7 @@ void copy_array(double *a, double *b, int size) {
 
 
 
-void duplicate(double mat[3][3], double inv[3][3]) {
+void duplicate_n_arrange(double mat[3][3], double inv[3][3]) {
   int i, j;
   double bx[4]; double by[4];
   double radians = ((360 / 13) * M_PI / 180);
@@ -94,7 +94,7 @@ int main()
   G_init_graphics(WIDTH, HEIGHT) ; //WIDTH x HEIGHT = 700x700
 
   D2d_make_identity(mat); D2d_make_identity(inv);
-  D2d_translate(mat, inv, WIDTH / 2, HEIGHT / 2);
+  D2d_translate(mat, inv, WIDTH /2, HEIGHT /2);
   D2d_mat_mult_points(ax, ay,  mat, ax, ay, 4) ;
 
 
@@ -105,19 +105,19 @@ int main()
     G_draw_string("Press and hold the spacebar.", 10, 10) ;
     G_rgb(r, 0, b);
 
-    duplicate(mat, inv);
-    move_n_scale(1.1, mat, inv);
+    duplicate_n_arrange(mat, inv);
+    move_n_scale(1.08, mat, inv);
 
     spacebar = G_wait_key();
     while (spacebar - '0' == -16) { //ascii char value for spacebar
       D2d_mat_mult_points(ax, ay,  mat, ax, ay, 4) ;
-      r += .05;
-      b -= .05;
+      r += .03;
+      b -= .03;
       spacebar = -1;
     }
-    if (spacebar == 'q') {
-      running = 0;
-      //exit(1);
+    if (spacebar == 'q' || ax[3] > WIDTH + 20) {
+      // running = 0;
+      exit(1);
     }
   }
 }

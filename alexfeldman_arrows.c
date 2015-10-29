@@ -80,7 +80,7 @@ void move_n_scale(double scalefactor, double mat[3][3], double inv[3][3]) {
   D2d_translate(mat, inv, -WIDTH / 2, -HEIGHT / 2);
   D2d_scale(mat, inv, scalefactor, scalefactor);
   D2d_translate(mat, inv, WIDTH / 2, HEIGHT / 2);
-  D2d_translate(mat, inv, 10, 0);
+  D2d_translate(mat, inv, 5, 0);
 }
 
 
@@ -106,7 +106,7 @@ int main()
     G_rgb(r, 0, b);
 
     duplicate_n_arrange(mat, inv);
-    move_n_scale(1.08, mat, inv);
+    move_n_scale(1.03, mat, inv);
 
     spacebar = G_wait_key();
     while (spacebar - '0' == -16) { //ascii char value for spacebar
@@ -115,9 +115,10 @@ int main()
       b -= .03;
       spacebar = -1;
     }
-    if (spacebar == 'q' || ax[3] > WIDTH + 20) {
-      // running = 0;
-      exit(1);
+    if (spacebar == 'q' || ax[3] > WIDTH - 20) {
+      running = 0;
+   
     }
   }
+  G_wait_key();
 }

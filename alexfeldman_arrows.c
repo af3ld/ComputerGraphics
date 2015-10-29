@@ -48,22 +48,27 @@ double ax[4] = {0,  -20,  20, -20} ;
 double ay[4] = {0,  -15,   0,  15} ;
 
 
-void copy_array(double *a, double *b, int size){
-int i;
-for (i = 0; i < size; i++){
-  b[i] = a[i];
+void copy_array(double *a, double *b, int size) {
+  int i;
+  for (i = 0; i < size; i++) {
+    b[i] = a[i];
+  }
 }
-}
+
+
 
 void duplicate(double mat[3][3], double inv[3][3]) {
   int i, j;
   double bx[4]; double by[4];
-  double radians = ((360/ 13)*M_PI / 180);
+  double radians = ((360 / 13) * M_PI / 180);
   copy_array(ax, bx, 4);
   copy_array(ay, by, 4);
+  D2d_make_identity(mat); D2d_make_identity(inv);
+  D2d_translate(mat, inv, WIDTH / -2, HEIGHT / -2);
+  D2d_rotate(mat, inv, radians);
+  D2d_translate(mat, inv, WIDTH / 2, HEIGHT / 2);
   for (i = 0; i < 13; i++) {
-      copy_array(ax, bx, 4);
-  copy_array(ay, by, 4);
+    D2d_mat_mult_points(bx, by,  mat, bx, by, 4) ;
     G_fill_polygon(bx, by, 4);
   }
 }
@@ -99,8 +104,10 @@ int main()
     G_rgb(1, 1, 1) ;
     G_draw_string("Press and hold the spacebar.", 10, 10) ;
     G_rgb(r, 0, b);
+
     duplicate(mat, inv);
     move_n_scale(1.1, mat, inv);
+
     spacebar = G_wait_key();
     while (spacebar - '0' == -16) { //ascii char value for spacebar
       D2d_mat_mult_points(ax, ay,  mat, ax, ay, 4) ;

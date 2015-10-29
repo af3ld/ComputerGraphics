@@ -22,6 +22,8 @@ double whatside(double ax, double ay, double bx,
 }
 
 
+v
+
 
 //Bounding Box For Line Segment
 //(x1,y1) = start of the line
@@ -68,6 +70,7 @@ void getslope(double *x, double *y, int z, double *slope) {
     slope[i] = (y[looper(i, z)] - y[i]) / (x[looper(i, z)] - x[i]);
   }
 }
+
 
 
 

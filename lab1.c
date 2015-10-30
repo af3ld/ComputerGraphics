@@ -59,6 +59,7 @@ void drawPolygon(double x[100], double y[100], int n) {
   }
 }
 
+//draws the fill in the polygon
 void drawPolygonFill(double *x_intersect, int i, int total) {
   int x_pos1, x_pos2;
   for (x_pos1 = 0; x_pos1 < total; x_pos1 += 2) {
@@ -87,7 +88,6 @@ void sort(double *x, int m) {
   }
 }
 
-
 //prints the x and y coordinates of a point
 void printarray(double *x, double y, int z) {
   int i;
@@ -96,12 +96,6 @@ void printarray(double *x, double y, int z) {
   }
 }
 
-//Points slope form; returns the new x coordinate
-double find_x(double xknown, double yknown, double slope, double newy) {
-  double newx = newy - yknown;
-  newx = newx / slope;
-  return newx + xknown;
-}
 
 //helper gets the loop back to 0
 int looper(int i, int n) {
@@ -117,12 +111,15 @@ double getslope(double xmin, double ymin, double xmax, double ymax) {
   return  (ymax - ymin) / (xmax - xmin);
 }
 
-//finds the largest value in array
-int findlargest(double *y, int z) {
+//finds the largest/smallest value in array
+int findextrema(double *y, int z, int swatch) {
   int position = 0;
-  double temp = 0;
+  double temp = 0 + (swatch * HEIGHT);
   for (int i = 0; i < z; i++) {
-    if (y[i] > temp) {
+    if (swatch == 0 && y[i] > temp) { //largest
+      position = i;
+      temp = y[i];
+    } else if (swatch == 1 && y[i] < temp) { //smallest
       position = i;
       temp = y[i];
     }
@@ -130,33 +127,17 @@ int findlargest(double *y, int z) {
   return position;
 }
 
-
-//finds the smallest in array
-int findsmallest(double *y, int z) {
-  int position = 0;
-  double temp = HEIGHT;
-  for (int i = 0; i < z; i++) {
-    if (y[i] < temp) {
-      position = i;
-      temp = y[i];
-    }
-  }
-  return position;
-}
-
-
-
-//fills the polygon
+//fills the polygon by iterating from the bottom to the top of the polygon
+//
 //currently not complete
 void fillgon(double *x, double *y, int length) {
   double x_intersect[length * 2]; //Only l*2 intersections can exist
   double bounds[4]; //0=top; 1=bottom; 2=left; 3=right
   double newx[10000], newy[10000], slope;
-  int i, xstart, xend, counter, ytop, ybottom, total;
+  int i, xstart, xend, counter, ytop, ybottom;
 
-  ytop = findlargest(y, length);
-  ybottom = findsmallest(y, length);
-
+  ytop = findextrema(y, length, 0); //0 returns largest, 1 returns smallest
+  ybottom = findextrema(y, length, 1);
 
   for (i = (int) y[ybottom] - 1;  i <= y[ytop]; i++) {
     counter = 0;
@@ -164,9 +145,9 @@ void fillgon(double *x, double *y, int length) {
       xend = looper(xstart, length);
 
       semgment_bounds(x[xstart], y[xstart], x[xend],
-                      y[looper(xstart, length)], bounds);
-      //printf("top: %.2lf, bottom: %.2lf, left: %.2lf, right: %.2lf\n", bounds[0], bounds[1], bounds[2], bounds[3]);
-
+                      y[looper(xstart, length)], bounds); 
+      //returns the north, south, east, west points of the line segment
+      
       if (i <= bounds[0] && i >= bounds[1]) {
         slope = getslope(x[xstart], y[xstart], x[xend], y[xend]);
         x_intersect[counter] = (i - y[xstart]) / slope + x[xstart];
@@ -178,10 +159,9 @@ void fillgon(double *x, double *y, int length) {
         x_intersect[counter] = x[xend];
       }
     }
-    total = counter;
 
-    sort(x_intersect, total);
-    drawPolygonFill(x_intersect, i, total);
+    sort(x_intersect, counter);
+    drawPolygonFill(x_intersect, i, counter);
   }
 }
 
@@ -208,9 +188,10 @@ int main() {
   fillgon(ax, ay, anom);
 
 
-
-  //bnom = clickAndSave(bx, by);
-  //drawPolygon(bx,by,bnom);
+  G_rgb(1,0,.4);
+  bnom = clickAndSave(bx, by);
+  drawPolygon(bx,by,bnom);
+  fillgon(bx, by, bnom);
 
   G_wait_key();
 

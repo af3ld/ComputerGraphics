@@ -22,7 +22,7 @@ double whatside(double ax, double ay, double bx,
 }
 
 
-v
+
 
 
 //Bounding Box For Line Segment
@@ -99,6 +99,7 @@ void f_intersect(double *px, double *py, int pn,
             pointincontainer(wx[i], wy[i], wx[looper(i, wn)], wy[looper(i, wn)],
                              xprime, yprime ) == 1) {
           c[counter] = xprime; c[counter + 1] = yprime;
+        G_wait_key();
         G_rgb(0,0,0);
         G_fill_circle(xprime,yprime, 2);
           counter += 2;
@@ -306,7 +307,6 @@ int main(int argc, char **argv) {
       drawit(i);
 
       G_rgb(0, 0, 0);
-      G_fill_circle(WIDTH / 2, HEIGHT / 2, 3);
 
       c = G_wait_key();
       cc = c - '0';

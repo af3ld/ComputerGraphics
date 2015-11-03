@@ -61,7 +61,6 @@ void drawPolygonFill(double *x_intersect, int i, int total) {
   for (x_pos1 = 0; x_pos1 < total; x_pos1 += 2) {
     x_pos2 = x_pos1 + 1;
     if (x_pos2 < total) {
-      G_wait_key();
       G_line(x_intersect[x_pos1], i, x_intersect[x_pos2], i);
     }
   }
@@ -122,13 +121,13 @@ int findextrema(double *y, int z, int swatch) {
 void fillgon(double *x, double *y, int length) {
   double x_intersect[length * 2]; //Only l*2 intersections can exist
   double bounds[4]; //0=top; 1=bottom; 2=left; 3=right
-  double newx[10000], newy[10000], slope;
-  int i, xstart, xend, counter, ytop, ybottom;
+  double newx[10000], newy[10000], slope, i;
+  int xstart, xend, counter, ytop, ybottom;
 
   ytop = findextrema(y, length, 0); //0 returns largest
   ybottom = findextrema(y, length, 1); //1 returns smallest
 
-  for (i = (int) y[ybottom] - 1;  i <= y[ytop] + 1; i++) {
+  for (i = y[ybottom] - 1 + 0.01;  i <= y[ytop] + 1; i++) {
     counter = 0;
     for (xstart = 0; xstart < length; xstart++) {
       xend = looper(xstart, length);

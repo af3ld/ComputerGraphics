@@ -1,4 +1,5 @@
 #include <D3d_matrix.h>
+#include <string.h>
 
 
 int D3d_print_mat (double a[4][4]) {
@@ -13,7 +14,7 @@ int D3d_print_mat (double a[4][4]) {
 	return 1 ;
 }
 
-int D2d_copy_mat (double a[4][4], double b[4][4]) {
+int D3d_copy_mat (double a[4][4], double b[4][4]) {
 	int r, c ;
 	for (r = 0 ; r < 4 ; r++ ) {
 		for (c = 0 ; c < 4 ; c++ ) {
@@ -24,7 +25,7 @@ int D2d_copy_mat (double a[4][4], double b[4][4]) {
 	return 1 ;
 }
 
-int D2d_mat_mult(double res[4][4], double a[4][4], double b[4][4]) {
+int D3d_mat_mult(double res[4][4], double a[4][4], double b[4][4]) {
 	int i, j, k;
 	double temp1, temp2, temp3[4][4];
 
@@ -48,7 +49,7 @@ int D2d_mat_mult(double res[4][4], double a[4][4], double b[4][4]) {
 	return 1;
 }
 
-int D2d_make_identity (double a[4][4]) {
+int D3d_make_identity (double a[4][4]) {
 // a = I
 	int r, c ;
 	for (r = 0 ; r < 4 ; r++ ) {
@@ -60,7 +61,7 @@ int D2d_make_identity (double a[4][4]) {
 	return 1 ;
 }
 
-int D2d_translate (double a[4][4], double b[4][4], double dx, double dy, double dz) {
+int D3d_translate (double a[4][4], double b[4][4], double dx, double dy, double dz) {
 // a = translation*a
 // b = b*translation_inverse
 	double t[4][4] ;
@@ -109,7 +110,7 @@ int D3d_rotate_x (double a[4][4], double b[4][4], double rads) {
 		{0, 0, 0, 1}
 	};
 
-	D2d_mat_mult(b,  b, q);
+	D3d_mat_mult(b,  b, q);
 
 
 	return 1;
@@ -133,7 +134,7 @@ int D3d_rotate_y (double a[4][4], double b[4][4], double rads) {
 		{0, 0, 0, 1}
 	};
 
-	D2d_mat_mult(b,  b, q);
+	D3d_mat_mult(b,  b, q);
 
 
 	return 1;
@@ -156,7 +157,7 @@ int D3d_rotate_z (double a[4][4], double b[4][4], double rads) {
 		{0, 0, 0, 1}
 	};
 
-	D2d_mat_mult(b,  b, q);
+	D3d_mat_mult(b,  b, q);
 
 
 	return 1;
@@ -180,7 +181,7 @@ int D3d_cs_rotate_x (double a[4][4], double b[4][4], double cs, double sn) {
 		{0, 0, 0, 1}
 	};
 
-	D2d_mat_mult(b,  b, q);
+	D3d_mat_mult(b,  b, q);
 
 
 	return 1;
@@ -205,7 +206,7 @@ int D3d_cs_rotate_y (double a[4][4], double b[4][4], double cs, double sn) {
 		{0, 0, 0, 1}
 	};
 
-	D2d_mat_mult(b,  b, q);
+	D3d_mat_mult(b,  b, q);
 
 
 	return 1;
@@ -230,7 +231,7 @@ int D3d_cs_rotate_z (double a[4][4], double b[4][4], double cs, double sn) {
 		{0, 0, 0, 1}
 	};
 
-	D2d_mat_mult(b,  b, q);
+	D3d_mat_mult(b,  b, q);
 
 
 	return 1;
@@ -322,32 +323,29 @@ int D3d_mat_mult_pt (double P[3], double m[4][4], double Q[3]) {
 // |  1   |       |  1   |
 
 	int i, j;
-	double tempX[numpoints], tempY[numpoints], tempZ[numpoints];
+	double temp[3];
 
 	for (i = 0; i < 4; i++) {
 		if (i == 0) {
-			tempX[j] = m[i][0] * Q[0] + m[i][1] * Q[1] + m[i][2] * Q[2] + m[i][3];
+			temp[0] = m[i][0] * Q[0] + m[i][1] * Q[1] + m[i][2] * Q[2] + m[i][3];
 		} else if (i == 1) {
-			tempY[j] = m[i][0] * Q[0] + m[i][1] * Q[1] + m[i][2] * Q[2] + m[i][3];
+			temp[1] = m[i][0] * Q[0] + m[i][1] * Q[1] + m[i][2] * Q[2] + m[i][3];
 		} else if (i == 2) {
-			tempZ[j] = m[i][0] * Q[0] + m[i][1] * Q[1] + m[i][2] * Q[2] + m[i][3];
+			temp[2] = m[i][0] * Q[0] + m[i][1] * Q[1] + m[i][2] * Q[2] + m[i][3];
 		}
 	}
-	P[0] = tempX[i];
-	P[1] = tempY[i];
-	P[2] = tempZ[i];
+	memcpy(P, temp, 3);
 	return 1;
 }
 
 int D3d_x_product (double res[3], double a[3], double b[3]) {
 
-	double tempX, tempY, tempZ;
-	tempX = (a[1] * b[2]) - (b[1] * a[2]);
-	tempY = (a[2] * b[0]) - (b[2] * a[0]);
-	tempZ = (x[0] * b[1]) - (b[0] * a[1]);
+	double temp[3];
+	temp[0] = (a[1] * b[2]) - (b[1] * a[2]);
+	temp[1] = (a[2] * b[0]) - (b[2] * a[0]);
+	temp[2] = (a[0] * b[1]) - (b[0] * a[1]);
 
-	res = {tempX, tempY, tempZ};
-
+	memcpy(res, temp, 3);
 	return 1;
 }
 

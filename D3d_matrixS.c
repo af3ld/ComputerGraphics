@@ -1,8 +1,6 @@
 #include <D3d_matrix.h>
 
 
-
-
 int D3d_print_mat (double a[4][4]) {
 	int r, c ;
 	for (r = 0 ; r < 4 ; r++ ) {
@@ -153,7 +151,7 @@ int D3d_rotate_z (double a[4][4], double b[4][4], double rads) {
 
 	double q[4][4] =  {
 		{cos(rads), sin(rads), 0, 0},
-		{-sin(rads), cos(rads), 0, 0},
+		{ -sin(rads), cos(rads), 0, 0},
 		{0, 0, 1, 0},
 		{0, 0, 0, 1}
 	};
@@ -163,3 +161,217 @@ int D3d_rotate_z (double a[4][4], double b[4][4], double rads) {
 
 	return 1;
 }
+
+int D3d_cs_rotate_x (double a[4][4], double b[4][4], double cs, double sn) {
+//rotates by inputting the sin and cos
+	double t[4][4] = {
+		{1, 0, 0, 0},
+		{0, cs, -sn, 0},
+		{0, sn, cs, 0},
+		{0, 0, 0, 1}
+	};
+
+	D3d_mat_mult(a,  t, a);
+
+	double q[4][4] =  {
+		{1, 0, 0, 0},
+		{0, cs, sn, 0},
+		{0, -sn, cs, 0},
+		{0, 0, 0, 1}
+	};
+
+	D2d_mat_mult(b,  b, q);
+
+
+	return 1;
+}
+
+int D3d_cs_rotate_y (double a[4][4], double b[4][4], double cs, double sn) {
+//rotates by inputting the sin and cos
+
+	double t[4][4] = {
+		{cs, 0, sn, 0},
+		{0, 1, 0, 0},
+		{ -sn, 0, cs, 0},
+		{0, 0, 0, 1}
+	};
+
+	D3d_mat_mult(a,  t, a);
+
+	double q[4][4] =  {
+		{cs, 0, -sn, 0},
+		{0, 1, 0, 0},
+		{sn, 0, cs, 0},
+		{0, 0, 0, 1}
+	};
+
+	D2d_mat_mult(b,  b, q);
+
+
+	return 1;
+}
+
+int D3d_cs_rotate_z (double a[4][4], double b[4][4], double cs, double sn) {
+//rotates by inputting the sin and cos
+
+	double t[4][4] = {
+		{cs, -sn, 0, 0},
+		{sn, cs, 0, 0},
+		{0, 0, 1, 0},
+		{0, 0, 0, 1}
+	};
+
+	D3d_mat_mult(a,  t, a);
+
+	double q[4][4] =  {
+		{cs, sn, 0, 0},
+		{ -sn, cs, 0, 0},
+		{0, 0, 1, 0},
+		{0, 0, 0, 1}
+	};
+
+	D2d_mat_mult(b,  b, q);
+
+
+	return 1;
+}
+
+int D3d_negate_x (double a[4][4], double b[4][4]) {
+// negate the x....reflects in the yz-plane
+// a = reflect*a
+// b = b*reflect_inverse
+
+	double t[4][4];
+	D3d_make_identity(t);
+	t[0][0] = -1;
+
+	D3d_mat_mult(a, t, a);
+	D3d_mat_mult(b, b, t);
+
+	return 1;
+}
+
+int D3d_negate_y (double a[4][4], double b[4][4]) {
+// negate the y....reflects in the xz-plane
+// a = reflect*a
+// b = b*reflect_inverse
+
+	double t[4][4];
+	D3d_make_identity(t);
+	t[1][1] = -1;
+
+	D3d_mat_mult(a, t, a);
+	D3d_mat_mult(b, b, t);
+
+	return 1;
+}
+
+
+int D3d_negate_z (double a[4][4], double b[4][4]) {
+// negate the z....reflects in the xy-plane
+// a = reflect*a
+// b = b*reflect_inverse
+
+	double t[4][4];
+	D3d_make_identity(t);
+	t[2][2] = -1;
+
+	D3d_mat_mult(a, t, a);
+	D3d_mat_mult(b, b, t);
+
+	return 1;
+}
+
+int D3d_mat_mult_points (double *X, double *Y, double *Z,
+                         double m[4][4],
+                         double *x, double *y, double *z, int numpoints) {
+// |X0 X1 X2 ...|       |x0 x1 x2 ...|
+// |Y0 Y1 Y2 ...| = m * |y0 y1 y2 ...|
+// |Z0 Z1 Z2 ...|       |z0 z1 z2 ...|
+// | 1  1  1 ...|       | 1  1  1 ...|
+
+	int i, j;
+	double tempX[numpoints], tempY[numpoints], tempZ[numpoints];
+
+	for (i = 0; i < 4; i++) {
+		for (j = 0; j < numpoints; j++) {
+			if (i == 0) {
+				tempX[j] = m[i][0] * x[j] + m[i][1] * y[j] + m[i][2] * z[j] + m[i][3];
+			} else if (i == 1) {
+				tempY[j] = m[i][0] * x[j] + m[i][1] * y[j] + m[i][2] * z[j] + m[i][3];
+			} else if (i == 2) {
+				tempZ[j] = m[i][0] * x[j] + m[i][1] * y[j] + m[i][2] * z[j] + m[i][3];
+			}
+		}
+	}
+
+	for (i = 0; i < numpoints; i++) {
+		X[i] = tempX[i];
+		Y[i] = tempY[i];
+		Z[i] = tempZ[i];
+	}
+
+	return 1;
+}
+
+int D3d_mat_mult_pt (double P[3], double m[4][4], double Q[3]) {
+// multiplies a SINGLE point by a matrix
+// | P[0] |       | Q[0] |
+// | P[1] | = m * | Q[1] |
+// | P[2] |       | Q[2] |
+// |  1   |       |  1   |
+
+	int i, j;
+	double tempX[numpoints], tempY[numpoints], tempZ[numpoints];
+
+	for (i = 0; i < 4; i++) {
+		if (i == 0) {
+			tempX[j] = m[i][0] * Q[0] + m[i][1] * Q[1] + m[i][2] * Q[2] + m[i][3];
+		} else if (i == 1) {
+			tempY[j] = m[i][0] * Q[0] + m[i][1] * Q[1] + m[i][2] * Q[2] + m[i][3];
+		} else if (i == 2) {
+			tempZ[j] = m[i][0] * Q[0] + m[i][1] * Q[1] + m[i][2] * Q[2] + m[i][3];
+		}
+	}
+	P[0] = tempX[i];
+	P[1] = tempY[i];
+	P[2] = tempZ[i];
+	return 1;
+}
+
+int D3d_x_product (double res[3], double a[3], double b[3]) {
+
+	double tempX, tempY, tempZ;
+	tempX = (a[1] * b[2]) - (b[1] * a[2]);
+	tempY = (a[2] * b[0]) - (b[2] * a[0]);
+	tempZ = (x[0] * b[1]) - (b[0] * a[1]);
+
+	res = {tempX, tempY, tempZ};
+
+	return 1;
+}
+
+int D3d_make_movement_sequence_matrix (
+    double mat[4][4],
+    double inv[4][4],
+    int num_movements,
+    int *movement_type_list,
+    double *parameter_list ) {
+
+	D3d_make_identity(mat); D3d_make_identity(inv);
+	printf("This has not been created yet\n");
+	return 1;
+}
+
+int D3d_view (double view[4][4],  double view_inverse[4][4],
+              double eye_x, double eye_y, double eye_z ,
+              double coi_x, double coi_y, double coi_z ,
+              double up_x,  double up_y,  double up_z ) {
+
+	printf("This has not been created yet\n");
+	return 1;
+}
+
+
+
+

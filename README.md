@@ -14,4 +14,6 @@
 <li>x = to rotate around the x-axis</li>
 <li>y = to rotate around the y-axis</li>
 <li>z = to rotate around the z-axis</li></ul>
-<b>TODO:</b> write everything</p>
+<b>TODO:</b> write the movement controls</p>
+
+<p>lab5: unsure</p>

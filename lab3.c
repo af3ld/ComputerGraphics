@@ -21,10 +21,6 @@ double whatside(double ax, double ay, double bx,
          ((y1 - y2) * (bx - x1) + (x2 - x1) * (by - y1));
 }
 
-
-
-
-
 //Bounding Box For Line Segment
 //(x1,y1) = start of the line
 //(x2, y2) = the end of the line
@@ -70,9 +66,6 @@ void getslope(double *x, double *y, int z, double *slope) {
     slope[i] = (y[looper(i, z)] - y[i]) / (x[looper(i, z)] - x[i]);
   }
 }
-
-
-
 
 //finds the intersection of the all lines
 //returns intersection coordinates via array
@@ -151,11 +144,7 @@ void myPolygon(double *x, double *y, int n) {
   }
 }
 
-
-//Draws bounding box around figure
-// seems only availble from drawit method, but it
-//sometimes works from other spots,
-//but not from all spots
+//Creates bounding box around figure
 double boundingbox(int i) {
   int k;
 
@@ -240,7 +229,6 @@ void movement(int i, double sf, double m[3][3], double minv[3][3]) {
   D2d_mat_mult_points(x[i], y[i], m, x[i], y[i], points[i]);
 }
 
-
 //writes the opening instructions
 void welcome(int i) {
   printf("Press");
@@ -261,10 +249,7 @@ void clipping(double *clipx, double *clipy, int i) {
   myPolygon(clipx, clipy, temp_i);
   f_intersect(clipx, clipy, temp_i, x[i], y[i], points[i], c);
   G_wait_key();
-
 }
-
-
 
 int main(int argc, char **argv) {
   char key, c;  FILE *g;

@@ -14,8 +14,8 @@ instead of (x',y',1) = (x,y,1) * M
 
 
 
-int D2d_print_mat (double a[3][3])
-{
+int D2d_print_mat (double a[3][3]){
+
   int r,c ;
   for (r = 0 ; r < 3 ; r++ ) {
       for (c = 0 ; c < 3 ; c++ ) {
@@ -27,12 +27,9 @@ int D2d_print_mat (double a[3][3])
   return 1 ;
 } 
 
-
-
-
-int D2d_copy_mat (double a[3][3], double b[3][3])
+int D2d_copy_mat (double a[3][3], double b[3][3]){
 // a = b
-{
+
   int r,c ;
   for (r = 0 ; r < 3 ; r++ ) {
       for (c = 0 ; c < 3 ; c++ ) {
@@ -69,9 +66,8 @@ int D2d_mat_mult(double res[3][3], double a[3][3], double b[3][3]){
 
 
 
-int D2d_make_identity (double a[3][3])
+int D2d_make_identity (double a[3][3]){
 // a = I
-{
   int r,c ;
   for (r = 0 ; r < 3 ; r++ ) {
       for (c = 0 ; c < 3 ; c++ ) {
@@ -92,10 +88,9 @@ int D2d_make_identity (double a[3][3])
 /////////////////////////////////////////////////////////
 
 
-int D2d_translate (double a[3][3], double b[3][3], double dx, double dy)
+int D2d_translate (double a[3][3], double b[3][3], double dx, double dy){
 // a = translation*a  
 // b = b*translation_inverse  
-{
   double t[3][3] ;
 
   D2d_make_identity(t) ;

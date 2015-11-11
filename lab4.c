@@ -121,6 +121,7 @@ int main (int argc, char **argv)
 {
   char q, action;
   double mat[4][4], minv[4][4], scaleFactor;
+  double radians = 3 * (M_PI / 180);
   FILE *g;
   int cc, sign, currentObj, k, h;
 
@@ -163,48 +164,51 @@ int main (int argc, char **argv)
 
       if (q == 'q') {
         exit(0) ;
-
       } else if (q == 'c') {
         sign = -sign ;
-
       } else if (q == 't') {
         action = q ;
-
       } else if (q == 'S') {
         action = q ;
-
       } else if (q == 'r') {
         action = q ;
-
       } else if (('0' <= q) && (q <= '9')) {
-        k = q - '0' ;  if (h < polys[currentObj]) currentObj = k ;
-
+        k = q - '0' ;
+        if (h != currentObj) {
+          currentObj = k;
+        }
       } else if ((q == 'x') && (action == 't')) {
+        D3d_translate (mat, minv, sign * 10, 0, 0);
 
       } else if ((q == 'y') && (action == 't')) {
+        D3d_translate (mat, minv, 0, sign * 10, 0);
 
       } else if ((q == 'z') && (action == 't')) {
+        D3d_translate(mat, minv, 0, 0, sign * 10);
 
       } else if ((q == 'x') && (action == 'r')) {
+        D3d_rotate_x(mat, minv, radians);
 
       } else if ((q == 'y') && (action == 'r')) {
+        D3d_rotate_y(mat, minv, radians);
 
       } else if ((q == 'z') && (action == 'r')) {
+        D3d_rotate_z(mat, minv, radians);
 
       } else {
         printf("no action\n") ;
       }
 
 
-      //   D3d_mat_mult_points (x[currentObj], y[currentObj], z[currentObj],  V,  x[currentObj], y[currentObj], z[currentObj], numpoints[currentObj] + 1) ;
-      //   // the numpoints[currentObj]+1 is because we have stored the center of the object
-      //   // at the arrays' end
+      D3d_mat_mult_points (x[currentObj], y[currentObj], z[currentObj],
+                           mat,  x[currentObj], y[currentObj],
+                           z[currentObj], points[currentObj] + 1) ;
+      //the numpoints[currentObj]+1 is because we have stored
+      //the center of the object at the arrays' end
 
-      //   G_rgb(0, 0, 0) ;
-      //   G_clear() ;
-      //   G_rgb(0, 0, 1) ;
-      //   draw_all_objects() ;
-
+      G_rgb(0, 0, 0);
+      G_clear();
+      drawit(currentObj);
     }
   }
 }

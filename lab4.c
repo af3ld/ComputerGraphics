@@ -55,10 +55,10 @@ void drawit(int i) {
                           z[i][shapeorder[i][k][j]]) + (WIDTH / 2);
         tempy[j] = mod * (y[i][shapeorder[i][k][j]] /
                           z[i][shapeorder[i][k][j]]) + (HEIGHT / 2);
-        printf("x%d:%.2lf, y%d:%.2lf, z%d:%.2lf\n",
-               shapeorder[i][k][j], tempx[j], shapeorder[i][k][j],
-               tempy[j], shapeorder[i][k][j],
-               z[i][shapeorder[i][k][j]]);
+        // printf("x%d:%.2lf, y%d:%.2lf, z%d:%.2lf\n",
+        //        shapeorder[i][k][j], tempx[j], shapeorder[i][k][j],
+        //        tempy[j], shapeorder[i][k][j],
+        //        z[i][shapeorder[i][k][j]]);
         j++;
       } else {
         j++;
@@ -121,8 +121,11 @@ int main (int argc, char **argv)
 {
   char q, action;
   double mat[4][4], minv[4][4], scaleFactor;
+  double radians = 3 * (M_PI / 180);
   FILE *g;
   int cc, sign, currentObj, k, h;
+  int increment = 15;
+  int xcounter, ycounter, zcounter = 0;
 
   for (cc = 1; cc < argc; cc++) {
     g = fopen(argv[cc], "r"); //opens a file; r = read only
@@ -163,48 +166,60 @@ int main (int argc, char **argv)
 
       if (q == 'q') {
         exit(0) ;
-
       } else if (q == 'c') {
         sign = -sign ;
-
       } else if (q == 't') {
         action = q ;
-
       } else if (q == 'S') {
         action = q ;
-
       } else if (q == 'r') {
         action = q ;
-
       } else if (('0' <= q) && (q <= '9')) {
-        k = q - '0' ;  if (h < polys[currentObj]) currentObj = k ;
-
+        k = q - '0' ;
+        if (h != currentObj) {
+          currentObj = k;
+        }
       } else if ((q == 'x') && (action == 't')) {
+        D3d_translate (mat, minv, sign * increment, 0, 0);
+        xcounter = xcounter + (sign * increment);
 
       } else if ((q == 'y') && (action == 't')) {
+        D3d_translate (mat, minv, 0, sign * increment, 0);
+        ycounter = ycounter + (sign * increment);
 
       } else if ((q == 'z') && (action == 't')) {
+        D3d_translate(mat, minv, 0, 0, sign * increment);
+        zcounter = zcounter + (sign * increment);
 
       } else if ((q == 'x') && (action == 'r')) {
+        D3d_translate(mat, minv, -xcounter, -ycounter, -zcounter);
+        D3d_rotate_x(mat, minv, sign * radians);
+        D3d_translate(mat, minv, xcounter, ycounter, zcounter);
 
       } else if ((q == 'y') && (action == 'r')) {
+        D3d_translate(mat, minv, -xcounter, -ycounter, -zcounter);
+        D3d_rotate_y(mat, minv, sign * radians);
+        D3d_translate(mat, minv, xcounter, ycounter, zcounter);
 
       } else if ((q == 'z') && (action == 'r')) {
+        D3d_translate(mat, minv, -xcounter, -ycounter, -zcounter);
+        D3d_rotate_z(mat, minv, sign * radians);
+        D3d_translate(mat, minv, xcounter, ycounter, zcounter);
 
       } else {
         printf("no action\n") ;
       }
 
 
-      //   D3d_mat_mult_points (x[currentObj], y[currentObj], z[currentObj],  V,  x[currentObj], y[currentObj], z[currentObj], numpoints[currentObj] + 1) ;
-      //   // the numpoints[currentObj]+1 is because we have stored the center of the object
-      //   // at the arrays' end
+      D3d_mat_mult_points (x[currentObj], y[currentObj], z[currentObj],
+                           mat,  x[currentObj], y[currentObj],
+                           z[currentObj], points[currentObj] + 1) ;
+      //the numpoints[currentObj]+1 is because we have stored
+      //the center of the object at the arrays' end
 
-      //   G_rgb(0, 0, 0) ;
-      //   G_clear() ;
-      //   G_rgb(0, 0, 1) ;
-      //   draw_all_objects() ;
-
+      G_rgb(0, 0, 0);
+      G_clear();
+      drawit(currentObj);
     }
   }
 }

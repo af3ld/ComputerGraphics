@@ -16,4 +16,4 @@
 <li>z = to rotate around the z-axis</li></ul>
 
 <p>lab5: use lab4 to create only visual side (i.e. no back)
-<br>TODO: remove back</p>
+<br><b>TODO:</b> remove back</p>

@@ -15,5 +15,5 @@
 <li>y = to rotate around the y-axis</li>
 <li>z = to rotate around the z-axis</li></ul>
 
-<p>lab5: use lab4 to create only visual side (i.e. no back)
-<br><b>TODO:</b> remove back</p>
+<p>lab5: use lab4 to create only visual side (i.e. no back)</p>
+<p>lab6: draw the 3d polygons using painters algorithm</p>

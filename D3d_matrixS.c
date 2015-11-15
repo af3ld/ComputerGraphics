@@ -339,13 +339,14 @@ int D3d_mat_mult_pt (double P[3], double m[4][4], double Q[3]) {
 }
 
 int D3d_x_product (double res[3], double a[3], double b[3]) {
-
-	double temp[3];
-	temp[0] = (a[1] * b[2]) - (b[1] * a[2]);
-	temp[1] = (a[2] * b[0]) - (b[2] * a[0]);
-	temp[2] = (a[0] * b[1]) - (b[0] * a[1]);
-
-	memcpy(res, temp, 3);
+	double temp[3] = {
+		(a[1] * b[2]) - (b[1] * a[2]),
+		(a[2] * b[0]) - (b[2] * a[0]),
+		(a[0] * b[1]) - (b[0] * a[1]),
+	};
+	res[0] = temp[0];
+	res[1] = temp[1];
+	res[2] = temp[2];
 	return 1;
 }
 

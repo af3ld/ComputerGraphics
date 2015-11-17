@@ -15,8 +15,8 @@ typedef struct {
   double plane_y[100];
   double plane_z[100];
   double avg_depth;
-  int id;
   int size;
+  double r, g, b;
 } Plane;
 
 void printarray(Plane *a, int size) {
@@ -55,8 +55,8 @@ int compare (const void *p, const void *q) {
 
   a = (Plane*)p ; b = (Plane*)q ;
 
-  return ((*a).avg_depth) < ((*b).avg_depth) ? -1 :
-         ((*a).avg_depth) > ((*b).avg_depth) ? 1 : 0;
+  return ((*a).avg_depth) < ((*b).avg_depth) ? 1 :
+         ((*a).avg_depth) > ((*b).avg_depth) ? -1 : 0;
 }
 
 void drawit(int i) {
@@ -78,7 +78,6 @@ void drawit(int i) {
                                               / z[i][shapeorder[i][k][j]])
                                        + (HEIGHT / 2);
         planecontainer[k].plane_z[j] = z[i][shapeorder[i][k][j]];
-        planecontainer[k].id = k;
         planecontainer[k].avg_depth += z[i][shapeorder[i][k][j]];
         j++;
       } else {
@@ -87,10 +86,19 @@ void drawit(int i) {
     }
     planecontainer[k].size = j;
     planecontainer[k].avg_depth = planecontainer[k].avg_depth / j;
+    planecontainer[k].r = (double)(rand() % 100) / 100;
+    planecontainer[k].g = (double)(rand() % 100) / 100;
+    planecontainer[k].b = (double)(rand() % 100) / 100;
   }
   // printarray(planecontainer, polys[i]);
   qsort (planecontainer, polys[i], sizeof(Plane), compare);
   // printarray(planecontainer, polys[i]);
+
+  for (k = 0; k < polys[i]; k++) {
+    G_rgb(planecontainer[k].r, planecontainer[k].g, planecontainer[k].b);
+    G_fill_polygon(planecontainer[k].plane_x,
+                   planecontainer[k].plane_y, planecontainer[k].size);
+  }
 
 }
 
@@ -169,9 +177,7 @@ int main (int argc, char **argv)
       // printarray(z[cc], points[cc]);
     }
   }
-
-  welcome(argc - 1);
-  scanf("%c", &q);
+  
   currentObj = q - '0';
   sign = 1 ;
   action = 't' ;

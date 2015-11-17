@@ -6,6 +6,7 @@ double halfangle = 40;
 double x[100][100], y[100][100], z[100][100]; //x, y, z coordinates
 int points[100]; //number of points in whatever
 int polys[10];
+int reverse = 1;
 int shapeorder[100][100][100]; //where things connect to
 int shapes[100][100]; //the shapes[what argument][which shape]
 int WIDTH = 600; int HEIGHT = 600; int DEPTH = 600;
@@ -52,11 +53,12 @@ int check_if_behind(double *plane_x, double *plane_y, double *plane_z,
                      plane_y[0] - plane_y[2],
                      plane_z[0] - plane_z[2],
                     };
-  double e_vect[3] = {-plane_x[0], -plane_y[0], -plane_z[0] };
+  double e_vect[3] = {plane_x[0] * reverse, plane_y[0] * reverse,
+                      plane_z[0] * reverse};
   D3d_x_product(p_vect, vect1, vect2);
   int dot_product = (p_vect[0] * e_vect[0]) + (p_vect[1] *
                     e_vect[1]) + (p_vect[2] * e_vect[2]);
-  
+
   return (dot_product > 0) ? 1 : 0;
 }
 
@@ -191,8 +193,8 @@ int main (int argc, char **argv)
         sign = -sign ;
       } else if (q == 't') {
         action = q ;
-      } else if (q == 'S') {
-        action = q ;
+      } else if (q == 's') {
+        reverse = -reverse;
       } else if (q == 'r') {
         action = q ;
       } else if (('0' <= q) && (q <= '9')) {

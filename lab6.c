@@ -7,7 +7,7 @@ int WIDTH = 600; int HEIGHT = 600; int DEPTH = 600;
 
 typedef struct {
   double centerx, centery, centerz;
-  double x[10000], y[10000], z[10000];
+  double *x, *y, *z;
   FILE *file;
   int numpolys; //the number of subpolygons that make up the object
   int points; //number of points in whatever
@@ -32,28 +32,38 @@ void printarray(Plane *a, int size) {
   printf("\n");
 }
 
+int size(double *a){
+
+}
+
 //reads in file
 //Modified from lab2; does not read in colors
-void readobject(FILE *g, Polygon* poly) {
-  int k, j;
+int readobject1(FILE *g) {
+  int p;
   fscanf(g, "%d", &poly->points);
   printf("there are %d points\n", poly->points);
+  return 
+}
+
+void readobject2(FILE *g, Polygon* poly) {
   for (k = 0; k < poly->points; k++) {
-    fscanf(g, "%lf  %lf  %lf", &poly->x[k], &poly->y[k],
+        fscanf(g, "%lf  %lf  %lf", &poly->x[k], &poly->y[k],
            &poly->z[k]);
     // printf("(%lf,%lf,%lf)\n", poly->x[k], poly->y[k], poly->z[k]);
   }
-  fscanf(g, "%d", &poly->numpolys);
-  // printf("there are %d polygons in this whatever\n", poly->numpolys);
-  for (k = 0; k < poly->numpolys; k++) {
-    fscanf(g, "%d", &poly->shapes[k]);
-    // printf("%d: ", poly->shapes[k]);
-    for (j = 0; j < poly->shapes[k]; j++) {
-      fscanf(g, "%d", &poly->shapeorder[k][j]);
-      // printf("%d ", poly->shapeorder[k][j]);
-    }
-    // printf("\n");
-  }
+
+  // fscanf(g, "%d", &poly->numpolys);
+  // // printf("there are %d polygons in this whatever\n", poly->numpolys);
+  // for (k = 0; k < poly->numpolys; k++) {
+  //   fscanf(g, "%d", &poly->shapes[k]);
+  //   // printf("%d: ", poly->shapes[k]);
+  //   for (j = 0; j < poly->shapes[k]; j++) {
+  //     fscanf(g, "%d", &poly->shapeorder[k][j]);
+  //     // printf("%d ", poly->shapeorder[k][j]);
+  //   }
+  //   G_wait_key();
+  //   // printf("\n");
+  // }
 }
 
 int compare (const void *p, const void *q) {
@@ -172,19 +182,21 @@ int main (int argc, char **argv)
       exit(1);
     } else {
       readobject(polygon[cc].file, &polygon[cc]);
+      printf("%d\n", sizeof(polygon[cc].x)/ sizeof(polygon[cc].x[0]));
+
       // printf("%d\n", polygon[cc].points);
-      D3d_make_identity(mat); D3d_make_identity(minv);
-      scaleFactor = scale_n_fit(&polygon[cc]);
-      D3d_translate(mat, minv, -polygon[cc].centerx, -polygon[cc].centery,
-                    -polygon[cc].centerz);
-      D3d_scale(mat, minv, scaleFactor, scaleFactor, scaleFactor);
-      D3d_mat_mult_points(polygon[cc].x, polygon[cc].y, polygon[cc].z,
-                          mat, polygon[cc].x, polygon[cc].y,
-                          polygon[cc].z, polygon[cc].points);
+      // D3d_make_identity(mat); D3d_make_identity(minv);
+      // scaleFactor = scale_n_fit(&polygon[cc]);
+      // D3d_translate(mat, minv, -polygon[cc].centerx, -polygon[cc].centery,
+      //               -polygon[cc].centerz);
+      // D3d_scale(mat, minv, scaleFactor, scaleFactor, scaleFactor);
+      // D3d_mat_mult_points(polygon[cc].x, polygon[cc].y, polygon[cc].z,
+      //                     mat, polygon[cc].x, polygon[cc].y,
+      //                     polygon[cc].z, polygon[cc].points);
     }
   }
 
-  // exit(1);
+  exit(1);
   printf("Which object (between 1 and %d) would you like to start with? \n", argc - 1);
   scanf("%c", &q);
   currentObj = q - '0';

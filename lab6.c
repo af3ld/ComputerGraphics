@@ -5,65 +5,69 @@ double halfangle = 40;
 double radians = 3 * (M_PI / 180);
 int WIDTH = 600; int HEIGHT = 600; int DEPTH = 600;
 
+
 typedef struct {
   double centerx, centery, centerz;
-  double *x, *y, *z;
+  double x[10000], y[10000], z[10000];
   FILE *file;
   int numpolys; //the number of subpolygons that make up the object
   int points; //number of points in whatever
-  int shapeorder[100][100]; //Where things connect to
-  int shapes[1000]; //the shapes [which shape]
+  int shapeorder[1000][100]; //Where things connect to
+  int shapes[10000]; //the shapes [which shape]
+  int xcounter, ycounter, zcounter;
 } Polygon;
 
 typedef struct {
   double avg_depth;
-  double plane_x[100];
-  double plane_y[100];
-  double plane_z[100];
+  double x[100];
+  double y[100];
+  double z[100];
   double r, g, b;
   int size;
 } Plane;
 
-void printarray(Plane *a, int size) {
+typedef struct {
+  int counter;
+  Plane *plane;
+} Final_plane;
+
+Final_plane total;
+
+void printarray(Final_plane* total, int size) {
   int i;
   for (i = 0; i < size; i++) {
-    printf("%.2lf\n", a[i].avg_depth);
+    printf("%d\n", total->plane[i].avg_depth);
   }
   printf("\n");
 }
 
-int size(double *a){
-
-}
-
 //reads in file
 //Modified from lab2; does not read in colors
-int readobject1(FILE *g) {
-  int p;
-  fscanf(g, "%d", &poly->points);
-  printf("there are %d points\n", poly->points);
-  return 
-}
-
-void readobject2(FILE *g, Polygon* poly) {
+void readobject(FILE *g, Polygon* poly) {
+  int j, k, p, np, shp[1000];
+  // int temp_numpolys, temp_shapes[1000], temp_shapeorder[100][100];
+  fscanf(g, "%d", &p);
+  poly->points = p;
+  // printf("there are %d points\n", poly->points);
   for (k = 0; k < poly->points; k++) {
-        fscanf(g, "%lf  %lf  %lf", &poly->x[k], &poly->y[k],
+    fscanf(g, "%lf  %lf  %lf", &poly->x[k], &poly->y[k],
            &poly->z[k]);
     // printf("(%lf,%lf,%lf)\n", poly->x[k], poly->y[k], poly->z[k]);
   }
-
-  // fscanf(g, "%d", &poly->numpolys);
-  // // printf("there are %d polygons in this whatever\n", poly->numpolys);
-  // for (k = 0; k < poly->numpolys; k++) {
-  //   fscanf(g, "%d", &poly->shapes[k]);
-  //   // printf("%d: ", poly->shapes[k]);
-  //   for (j = 0; j < poly->shapes[k]; j++) {
-  //     fscanf(g, "%d", &poly->shapeorder[k][j]);
-  //     // printf("%d ", poly->shapeorder[k][j]);
-  //   }
-  //   G_wait_key();
-  //   // printf("\n");
-  // }
+  // printf("%d\n", sizeof(poly->x) / sizeof(poly->x[0]));
+  fscanf(g, "%d", &np);
+  poly->numpolys = np;
+  // printf("there are %d polygons in this whatever\n", poly->numpolys); //works up til here
+  for (k = 0; k < np; k++) {
+    fscanf(g, "%d", &shp[k]);
+    poly->shapes[k] = shp[k];
+    // printf("%d: ", poly->shapes[k]);
+    for (j = 0; j < shp[k]; j++) {
+      fscanf(g, "%d", &poly->shapeorder[k][j]);
+      // printf("%d ", poly->shapeorder[k][j]);
+    }
+    // printf("\n");
+  }
 }
 
 int compare (const void *p, const void *q) {
@@ -75,46 +79,62 @@ int compare (const void *p, const void *q) {
          ((*a).avg_depth) > ((*b).avg_depth) ? -1 : 0;
 }
 
-void drawit(Polygon poly) {
-  int k, j;
+void predraw(Polygon poly, Final_plane* total) {
   double mod = (HEIGHT / 2) / tan(halfangle * (M_PI / 180));
-  Plane planecontainer[poly.numpolys];
+  int size = 0;
+  int i, k, j;
+  Plane plane[poly.numpolys];
   for (k = 0; k < poly.numpolys; k++) {
     j = 0;
-    planecontainer[k].avg_depth = 0.0;
+    plane[k].avg_depth = 0.0;
     while (j < poly.shapes[k]) {
       if (fabs(poly.z[poly.shapeorder[k][j]]) > 10e-7) { //Checks if z == 0
-        planecontainer[k].plane_x[j] = mod * (poly.x[poly.shapeorder[k][j]]
-                                              / poly.z[poly.shapeorder[k][j]])
-                                       + (WIDTH / 2);
-        planecontainer[k].plane_y[j] = mod * (poly.y[poly.shapeorder[k][j]]
-                                              / poly.z[poly.shapeorder[k][j]])
-                                       + (WIDTH / 2);
-        printf("%lf, %lf\n", planecontainer[k].plane_x[j], planecontainer[k].plane_y[j]);
-        planecontainer[k].plane_z[j] = poly.z[poly.shapeorder[k][j]];
-        planecontainer[k].avg_depth += poly.z[poly.shapeorder[k][j]];
+        plane[k].x[j] = mod * (poly.x[poly.shapeorder[k][j]]
+                               / poly.z[poly.shapeorder[k][j]])
+                        + (WIDTH / 2);
+        plane[k].y[j] = mod * (poly.y[poly.shapeorder[k][j]]
+                               / poly.z[poly.shapeorder[k][j]])
+                        + (WIDTH / 2);
+        // printf("%lf, %lf\n", plane[k].x[j], plane[k].y[j]);
+        plane[k].z[j] = poly.z[poly.shapeorder[k][j]];
+        plane[k].avg_depth += poly.z[poly.shapeorder[k][j]];
         j++;
       } else {
         j++;
       }
     }
-    planecontainer[k].size = j;
-    planecontainer[k].avg_depth = planecontainer[k].avg_depth / j;
-    planecontainer[k].r = (double)(rand() % 100) / 100;
-    planecontainer[k].g = (double)(rand() % 100) / 100;
-    planecontainer[k].b = (double)(rand() % 100) / 100;
+    plane[k].size = j;
+    plane[k].avg_depth = plane[k].avg_depth / j;
+    plane[k].r = (double)(rand() % 100) / 100;
+    plane[k].g = (double)(rand() % 100) / 100;
+    plane[k].b = (double)(rand() % 100) / 100;
   }
-  // printarray(planecontainer, poly.numpolys);
-  qsort (planecontainer, poly.numpolys, sizeof(Plane), compare);
-  // printarray(planecontainer, poly.numpolys);
 
+  total->plane = malloc((poly.numpolys + total->counter)  * sizeof(Plane));
   for (k = 0; k < poly.numpolys; k++) {
-    G_rgb(planecontainer[k].r, planecontainer[k].g, planecontainer[k].b);
-    G_fill_polygon(planecontainer[k].plane_x,
-                   planecontainer[k].plane_y, planecontainer[k].size);
+    total->plane[k + total->counter] = plane[k];
+    // printf("%lf\n",  total->plane[k + total->counter].avg_depth);
   }
-
+  total->counter += poly.numpolys;
+  // printf("-----------------------\n\n");
+  // printf("%d\n", total->counter);
 }
+
+void draw(Final_plane *total) {
+  int i;
+  for (i = 0; i < total->counter; i++) {
+    printf("%lf \n", total->plane[i].avg_depth);
+  }
+  qsort (total->plane, total->counter, sizeof(Plane), compare);
+
+  // printarray(total.planes, total.counter);
+
+// for (k = 0; k < poly.numpolys; k++) {
+//   G_rgb(plane[k].r, plane[k].g, plane[k].b);
+//   G_fill_polygon(plane[k].x,
+//                  plane[k].y, plane[k].size);
+}
+
 
 //finds the largest/smallest value in array
 int findextrema(double *y, int z, int swatch) {
@@ -134,7 +154,7 @@ int findextrema(double *y, int z, int swatch) {
 
 //finds the scale factor of the object
 //also reveals the center of the object
-double scale_n_fit(Polygon *poly) {
+double scale_n_fit(Polygon* poly) {
   int k;
   double smallx, bigx, smally, bigy, smallz, bigz;
   bigx = poly->x[findextrema(poly->x, poly->points, 0)];
@@ -172,8 +192,9 @@ int main (int argc, char **argv)
   double mat[4][4], minv[4][4], scaleFactor;
   int cc, sign, currentObj, k, h;
   int increment = 20;
-  int xcounter, ycounter, zcounter = 0;
   Polygon polygon[argc];
+  Final_plane total;
+
 
   for (cc = 1; cc < argc; cc++) {
     polygon[cc].file = fopen(argv[cc], "r"); //opens a file; r = read only
@@ -182,36 +203,41 @@ int main (int argc, char **argv)
       exit(1);
     } else {
       readobject(polygon[cc].file, &polygon[cc]);
-      printf("%d\n", sizeof(polygon[cc].x)/ sizeof(polygon[cc].x[0]));
-
-      // printf("%d\n", polygon[cc].points);
-      // D3d_make_identity(mat); D3d_make_identity(minv);
-      // scaleFactor = scale_n_fit(&polygon[cc]);
-      // D3d_translate(mat, minv, -polygon[cc].centerx, -polygon[cc].centery,
-      //               -polygon[cc].centerz);
-      // D3d_scale(mat, minv, scaleFactor, scaleFactor, scaleFactor);
-      // D3d_mat_mult_points(polygon[cc].x, polygon[cc].y, polygon[cc].z,
-      //                     mat, polygon[cc].x, polygon[cc].y,
-      //                     polygon[cc].z, polygon[cc].points);
+      D3d_make_identity(mat); D3d_make_identity(minv);
+      scaleFactor = scale_n_fit(&polygon[cc]);
+      D3d_translate(mat, minv, -polygon[cc].centerx, -polygon[cc].centery,
+                    -polygon[cc].centerz);
+      D3d_scale(mat, minv, scaleFactor, scaleFactor, scaleFactor);
+      D3d_mat_mult_points(polygon[cc].x, polygon[cc].y, polygon[cc].z,
+                          mat, polygon[cc].x, polygon[cc].y,
+                          polygon[cc].z, polygon[cc].points);
     }
   }
 
-  exit(1);
-  printf("Which object (between 1 and %d) would you like to start with? \n", argc - 1);
-  scanf("%c", &q);
-  currentObj = q - '0';
+  // printf("Which object (between 1 and %d) would you like to start with? \n", argc - 1);
+  // scanf("%c", &q);
+  // currentObj = q - '0';
+  currentObj = 1;
   sign = 1 ;
   action = 't' ;
 
+
   if (currentObj < argc && currentObj > 0) {
-    G_init_graphics(WIDTH, HEIGHT);
-
+    // G_init_graphics(WIDTH, HEIGHT);
+    polygon[currentObj].xcounter, polygon[currentObj].ycounter,
+            polygon[currentObj].zcounter = 0;
+    int temp[argc - 1];
     while (1) {
-      G_rgb(0, 0, 0);
-      G_clear();
-      drawit(polygon[currentObj]);
+      //   G_rgb(0, 0, 0);
+      //   G_clear();
+      total.counter = 0;
 
+      for (cc = 1; cc < argc; cc++) {
+        predraw(polygon[cc], &total);
+      }
+      draw(&total);
 
+      exit(1);
       D3d_make_identity (mat) ;
       D3d_make_identity (minv) ;
 
@@ -234,35 +260,34 @@ int main (int argc, char **argv)
         }
       } else if ((q == 'x') && (action == 't')) {
         D3d_translate (mat, minv, sign * increment, 0, 0);
-        xcounter = xcounter + (sign * increment);
+        polygon[currentObj].xcounter = polygon[currentObj].xcounter + (sign * increment);
 
       } else if ((q == 'y') && (action == 't')) {
         D3d_translate (mat, minv, 0, sign * increment, 0);
-        ycounter = ycounter + (sign * increment);
+        polygon[currentObj].ycounter = polygon[currentObj].ycounter + (sign * increment);
 
       } else if ((q == 'z') && (action == 't')) {
         D3d_translate(mat, minv, 0, 0, sign * increment);
-        zcounter = zcounter + (sign * increment);
+        polygon[currentObj].zcounter = polygon[currentObj].zcounter + (sign * increment);
 
       } else if ((q == 'x') && (action == 'r')) {
-        D3d_translate(mat, minv, -xcounter, -ycounter, -zcounter);
+        D3d_translate(mat, minv, -polygon[currentObj].xcounter, -polygon[currentObj].ycounter, -polygon[currentObj].zcounter);
         D3d_rotate_x(mat, minv, sign * radians);
-        D3d_translate(mat, minv, xcounter, ycounter, zcounter);
+        D3d_translate(mat, minv, polygon[currentObj].xcounter, polygon[currentObj].ycounter, polygon[currentObj].zcounter);
 
       } else if ((q == 'y') && (action == 'r')) {
-        D3d_translate(mat, minv, -xcounter, -ycounter, -zcounter);
+        D3d_translate(mat, minv, -polygon[currentObj].xcounter, -polygon[currentObj].ycounter, -polygon[currentObj].zcounter);
         D3d_rotate_y(mat, minv, sign * radians);
-        D3d_translate(mat, minv, xcounter, ycounter, zcounter);
+        D3d_translate(mat, minv, polygon[currentObj].xcounter, polygon[currentObj].ycounter, polygon[currentObj].zcounter);
 
       } else if ((q == 'z') && (action == 'r')) {
-        D3d_translate(mat, minv, -xcounter, -ycounter, -zcounter);
+        D3d_translate(mat, minv, -polygon[currentObj].xcounter, -polygon[currentObj].ycounter, -polygon[currentObj].zcounter);
         D3d_rotate_z(mat, minv, sign * radians);
-        D3d_translate(mat, minv, xcounter, ycounter, zcounter);
+        D3d_translate(mat, minv, polygon[currentObj].xcounter, polygon[currentObj].ycounter, polygon[currentObj].zcounter);
 
       } else {
         printf("no action\n") ;
       }
-
 
       D3d_mat_mult_points(polygon[currentObj].x, polygon[currentObj].y,
                           polygon[currentObj].z, mat,

@@ -1,8 +1,6 @@
 #include <FPT.h>
 #include <D3d_matrix.h>
-#define WIDTH = 600; 
-#define HEIGHT = 600;
-#define DEPTH = 600;
+
 
 double centerx[10], centery[10], centerz[10];
 double halfangle = 40;
@@ -12,7 +10,9 @@ int numpolys[10]; //the number of subpolygons that make up the object
 int points[10];
 int shapeorder[10][10000][10];
 int shapes[10][10000];
-double xcounter[10], ycounter[10]; zcounter[10];
+double xcounter[10], ycounter[10], zcounter[10];
+
+int WIDTH = 600; int HEIGHT = 600; int DEPTH = 600;
 
 typedef struct {
   double avg_depth;
@@ -29,13 +29,13 @@ typedef struct {
 
 Final_plane total;
 
-// void printarray(Final_plane* total, int size) {
-//   int i;
-//   for (i = 0; i < size; i++) {
-//     printf("%d\n", total->plane[i].avg_depth);
-//   }
-//   printf("\n");
-// }
+void printarray(double *a, int size) {
+  int i;
+  for (i = 0; i < size; i++) {
+    printf("%.2lf\n", a[i]);
+  }
+  printf("\n");
+}
 
 //reads in file
 //Modified from lab2; does not read in colors
@@ -45,8 +45,7 @@ void readobject(FILE *g, int i) {
   fscanf(g, "%d", &points[i]);
   // printf("there are %d points\n", points[i]);
   for (k = 0; k < points[i]; k++) {
-    fscanf(g, "%lf  %lf  %lf", &x[i][k], &y[i][k],
-           &z[i][k]);
+    fscanf(g, "%lf  %lf  %lf", &x[i][k], &y[i][k], &z[i][k]);
     // printf("(%lf,%lf,%lf)\n", x[i][k], y[i][k], z[i][k]);
   }
   fscanf(g, "%d", &numpolys[i]);
@@ -74,13 +73,15 @@ int compare (const void *p, const void *q) {
 void predraw(int i) {
   double mod = (HEIGHT / 2) / tan(halfangle * (M_PI / 180));
   int size = 0;
-  int i, k, j;
-  Plane plane[numpolys[cc]];
-  for (k = 0; k < numpolys[cc]; k++) {
+  int k, j;
+  Plane plane[numpolys[i]];
+
+  for (k = 0; k < numpolys[i]; k++) {
     j = 0;
     plane[k].avg_depth = 0.0;
     while (j < shapes[i][k]) {
       if (fabs(z[i][shapeorder[i][k][j]]) > 10e-7) { //Checks if z == 0
+
         plane[k].x[j] = mod * (x[i][shapeorder[i][k][j]]
                                / z[i][shapeorder[i][k][j]])
                         + (WIDTH / 2);
@@ -89,7 +90,7 @@ void predraw(int i) {
                         + (WIDTH / 2);
         // printf("%lf, %lf\n", plane[k].x[j], plane[k].y[j]);
         plane[k].z[j] = z[i][shapeorder[i][k][j]];
-        plane[k].avg_depth += z[shapeorder[i][k][j]];
+        plane[k].avg_depth += z[i][shapeorder[i][k][j]];
         j++;
       } else {
         j++;
@@ -114,9 +115,9 @@ void draw() {
     G_rgb(.2, .6, .4);
     G_fill_polygon(total.plane[k].x,
                    total.plane[k].y, total.plane[k].size);
-    G_rgb(1,1,1);
+    G_rgb(1, 1, 1);
     G_polygon(total.plane[k].x,
-                   total.plane[k].y, total.plane[k].size);
+              total.plane[k].y, total.plane[k].size);
   }
 }
 
@@ -147,7 +148,7 @@ double scale_n_fit(int i) {
   bigy = y[i][findextrema(y[i], points[i], 0)];
   smally = y[i][findextrema(y[i], points[i], 1)];
   bigz = z[i][findextrema(z[i], points[i], 0)];
-  smallz = z[i][findextrema(z[i], points[i], 0)];
+  smallz = z[i][findextrema(z[i], points[i], 1)];
 
   double boxheight = bigy - smally;
   double boxwidth =  bigx - smallx;
@@ -169,8 +170,7 @@ void welcome(int i) {
          "Press 1 through %d to move the respective object: ", i);
 }
 
-int main (int argc, char **argv)
-{
+int main (int argc, char **argv){
   char q, action;
   double mat[4][4], minv[4][4], scaleFactor;
   FILE *g;
@@ -184,6 +184,7 @@ int main (int argc, char **argv)
       exit(1);
     } else {
       readobject(g, cc);
+      // printarray(z[cc], points[cc]);
       D3d_make_identity(mat); D3d_make_identity(minv);
       scaleFactor = scale_n_fit(cc);
       D3d_translate(mat, minv, -centerx[cc], -centery[cc], -centerz[cc]);
@@ -196,7 +197,6 @@ int main (int argc, char **argv)
   printf("Which object (between 1 and %d) would you like to start with? \n", argc - 1);
   scanf("%c", &q);
   currentObj = q - '0';
-  // currentObj = 1;
   sign = 1 ;
   action = 't' ;
 
@@ -207,13 +207,14 @@ int main (int argc, char **argv)
     while (1) {
       G_rgb(0, 0, 0);
       G_clear();
-      total.counter = 0;
 
+      total.counter = 0;
       for (cc = 1; cc < argc; cc++) {
         predraw(cc);
       }
-      draw(total);
+      draw();
 
+      // exit(1);
       D3d_make_identity (mat) ;
       D3d_make_identity (minv) ;
 
@@ -229,10 +230,12 @@ int main (int argc, char **argv)
         action = q ;
       } else if (q == 'r') {
         action = q ;
-      } else if (('0' <= q) && (q <= '9')) {
+      } else if (('0' < q) && (q <= argc + '0' - 1)) {
         k = q - '0' ;
-        if (h != currentObj) {
+        if (k != currentObj) {
           currentObj = k;
+          printf("Which object: %d\n", currentObj);
+
         }
       } else if ((q == 'x') && (action == 't')) {
         D3d_translate (mat, minv, sign * increment, 0, 0);
@@ -240,36 +243,41 @@ int main (int argc, char **argv)
 
       } else if ((q == 'y') && (action == 't')) {
         D3d_translate (mat, minv, 0, sign * increment, 0);
-        polygon[currentObj].ycounter = polygon[currentObj].ycounter + (sign * increment);
+        ycounter[currentObj] = ycounter[currentObj] + (sign * increment);
 
       } else if ((q == 'z') && (action == 't')) {
         D3d_translate(mat, minv, 0, 0, sign * increment);
-        polygon[currentObj].zcounter = polygon[currentObj].zcounter + (sign * increment);
+        zcounter[currentObj] = zcounter[currentObj] + (sign * increment);
 
       } else if ((q == 'x') && (action == 'r')) {
-        D3d_translate(mat, minv, -polygon[currentObj].xcounter, -polygon[currentObj].ycounter, -polygon[currentObj].zcounter);
+        D3d_translate(mat, minv, -xcounter[currentObj],
+                      -ycounter[currentObj], -zcounter[currentObj]);
         D3d_rotate_x(mat, minv, sign * radians);
-        D3d_translate(mat, minv, polygon[currentObj].xcounter, polygon[currentObj].ycounter, polygon[currentObj].zcounter);
+        D3d_translate(mat, minv, xcounter[currentObj],
+                      ycounter[currentObj], zcounter[currentObj]);
 
       } else if ((q == 'y') && (action == 'r')) {
-        D3d_translate(mat, minv, -polygon[currentObj].xcounter, -polygon[currentObj].ycounter, -polygon[currentObj].zcounter);
+        D3d_translate(mat, minv, -xcounter[currentObj],
+                      -ycounter[currentObj], -zcounter[currentObj]);
         D3d_rotate_y(mat, minv, sign * radians);
-        D3d_translate(mat, minv, polygon[currentObj].xcounter, polygon[currentObj].ycounter, polygon[currentObj].zcounter);
+        D3d_translate(mat, minv, xcounter[currentObj],
+                      ycounter[currentObj], zcounter[currentObj]);
 
       } else if ((q == 'z') && (action == 'r')) {
-        D3d_translate(mat, minv, -polygon[currentObj].xcounter, -polygon[currentObj].ycounter, -polygon[currentObj].zcounter);
+        D3d_translate(mat, minv, -xcounter[currentObj],
+                      -ycounter[currentObj], -zcounter[currentObj]);
         D3d_rotate_z(mat, minv, sign * radians);
-        D3d_translate(mat, minv, polygon[currentObj].xcounter, polygon[currentObj].ycounter, polygon[currentObj].zcounter);
+        D3d_translate(mat, minv, xcounter[currentObj],
+                      ycounter[currentObj], zcounter[currentObj]);
 
       } else {
         printf("no action\n") ;
       }
 
-      D3d_mat_mult_points(polygon[currentObj].x, polygon[currentObj].y,
-                          polygon[currentObj].z, mat,
-                          polygon[currentObj].x, polygon[currentObj].y,
-                          polygon[currentObj].z,
-                          polygon[currentObj].points + 1) ;
+      D3d_mat_mult_points(x[currentObj], y[currentObj],
+                          z[currentObj], mat,
+                          x[currentObj], y[currentObj],
+                          z[currentObj], points[currentObj] + 1);
       //the numpoints[currentObj]+1 is because we have stored
       //the center of the object at the arrays' end
     }

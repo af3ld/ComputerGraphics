@@ -20,6 +20,7 @@ typedef struct {
 
 typedef struct {
   double avg_depth;
+  double color[3];
   double x[100];
   double y[100];
   double z[100];
@@ -31,15 +32,7 @@ typedef struct {
   Plane *plane;
 } Final_plane;
 
-Final_plane total;
-
-// void printarray(Final_plane* total, int size) {
-//   int i;
-//   for (i = 0; i < size; i++) {
-//     printf("%d\n", total->plane[i].avg_depth);
-//   }
-//   printf("\n");
-// }
+Final_plane total; //Global collection of planes
 
 //reads in file
 //Modified from lab2; does not read in colors
@@ -70,16 +63,18 @@ void readobject(FILE *g, Object* poly) {
   }
 }
 
+//Compare method; auxillary for qsort
 int compare (const void *p, const void *q) {
   Plane *a, *b ;
 
   a = (Plane*)p ; b = (Plane*)q ;
 
-  return ((*a).avg_depth) < ((*b).avg_depth) ? -1 :
-         ((*a).avg_depth) > ((*b).avg_depth) ? 1 : 0;
+  return ((*a).avg_depth) < ((*b).avg_depth) ? 1 :
+         ((*a).avg_depth) > ((*b).avg_depth) ? -1 : 0;
 }
 
-void predraw(Object poly, Final_plane* total) {
+//puts all the planes into collection
+void predraw(Object poly, int in) {
   double mod = (HEIGHT / 2) / tan(halfangle * (M_PI / 180));
   int size = 0;
   int i, k, j;
@@ -104,27 +99,33 @@ void predraw(Object poly, Final_plane* total) {
       }
     }
     plane[k].size = j;
+    plane[k].color[0] = poly.r;
+    plane[k].color[1] = poly.g;
+    plane[k].color[2] = poly.b;
     plane[k].avg_depth = plane[k].avg_depth / j;
   }
 
-  total->plane = malloc((poly.numpolys + total->counter)  * sizeof(Plane));
   for (k = 0; k < poly.numpolys; k++) {
-    total->plane[k + total->counter] = plane[k];
+    total.plane[k + total.counter] = plane[k];
     // printf("%lf\n",  total->plane[k + total->counter].avg_depth);
   }
-  total->counter += poly.numpolys;
-  // printf("-----------------------\n\n");
-  // printf("%d\n", total->counter);
+  total.counter += poly.numpolys;
+  // printf("-----------------------\n");
+  // printf("%d\n", total.counter);
 }
 
-void draw(Final_plane *total) {
+//draws the all the planes based on average depth
+void draw() {
   int i;
-  qsort (total->plane, total->counter, sizeof(Plane), compare);
-  // for (i = 0; i < total->counter; i++) {
-  //   printf("%lf \n", total->plane[i].avg_depth);
-  // }
-  for (i = 0; i < total->counter; i++) {
-    G_fill_polygon(total->plane[i].x, total->plane[i].y, total->plane[i].size);
+  qsort (total.plane, total.counter, sizeof(Plane), compare);
+  for (i = 0; i < total.counter; i++) {
+    G_rgb(total.plane[i].color[0], total.plane[i].color[1],
+          total.plane[i].color[2]);
+    G_fill_polygon(total.plane[i].x, total.plane[i].y,
+                   total.plane[i].size);
+    G_rgb(1, 1, 1);
+    G_polygon(total.plane[i].x, total.plane[i].y,
+              total.plane[i].size);
   }
 }
 
@@ -173,20 +174,29 @@ double scale_n_fit(Object* poly) {
 }
 
 //changes the message based on how many objects are inputted via command line
-void welcome(int i) {
-  printf((i == 1) ? "Press 1 to move the object: " :
-         (i == 2) ? "Press 1 or 2 to the first or second object: " :
-         "Press 1 through %d to move the respective object: ", i);
+int welcome(int i) {
+  char q;
+  if (i == 1) {
+    printf("Press 1 to move the object\n");
+    q = '1';
+  } else if (i == 2) {
+    printf("Press 1 or 2 to move the first or second object: ");
+    scanf("%c", &q);
+  } else {
+    printf("Press 1 through %d to move that object: ", i);
+    scanf("%c", &q);
+  }
+  return q - '0';
 }
 
 int main (int argc, char **argv)
 {
   char q, action;
   double mat[4][4], minv[4][4], scaleFactor;
-  int cc, sign, currentObj, k, h;
-  int increment = 20;
+  int cc, sign, curObj, k, h;
+  int increment = 20; int temp = 0;
   Object object[argc];
-  Final_plane total;
+
 
 
   for (cc = 1; cc < argc; cc++) {
@@ -196,6 +206,7 @@ int main (int argc, char **argv)
       exit(1);
     } else {
       readobject(object[cc].file, &object[cc]);
+
       D3d_make_identity(mat); D3d_make_identity(minv);
       scaleFactor = scale_n_fit(&object[cc]);
       D3d_translate(mat, minv, -object[cc].centerx, -object[cc].centery,
@@ -204,25 +215,25 @@ int main (int argc, char **argv)
       D3d_mat_mult_points(object[cc].x, object[cc].y, object[cc].z,
                           mat, object[cc].x, object[cc].y,
                           object[cc].z, object[cc].points);
-
       object[cc].r = (double)(rand() % 100) / 100;
       object[cc].g = (double)(rand() % 100) / 100;
       object[cc].b = (double)(rand() % 100) / 100;
+      temp += object[cc].numpolys;
     }
   }
 
-  // printf("Which object (between 1 and %d) would you like to start with? \n", argc - 1);
-  // scanf("%c", &q);
-  // currentObj = q - '0';
-  currentObj = 1;
+  total.plane = malloc(temp  * sizeof(Plane));
+
+
+  curObj = welcome(argc - 1);
   sign = 1 ;
   action = 't' ;
 
 
-  if (currentObj < argc && currentObj > 0) {
+  if (curObj < argc && curObj > 0) {
     G_init_graphics(WIDTH, HEIGHT);
-    object[currentObj].xcounter, object[currentObj].ycounter,
-           object[currentObj].zcounter = 0;
+    object[curObj].xcounter, object[curObj].ycounter,
+           object[curObj].zcounter = 0;
 
     while (1) {
       G_rgb(0, 0, 0);
@@ -230,9 +241,10 @@ int main (int argc, char **argv)
       total.counter = 0;
 
       for (cc = 1; cc < argc; cc++) {
-        predraw(object[cc], &total);
+        predraw(object[cc], cc);
+        // printf("-----------------------\n");
       }
-      draw(&total);
+      draw(total);
 
       D3d_make_identity (mat) ;
       D3d_make_identity (minv) ;
@@ -251,46 +263,46 @@ int main (int argc, char **argv)
         action = q ;
       } else if (('0' <= q) && (q <= '9')) {
         k = q - '0' ;
-        if (h != currentObj) {
-          currentObj = k;
+        if (h != curObj) {
+          curObj = k;
         }
       } else if ((q == 'x') && (action == 't')) {
         D3d_translate (mat, minv, sign * increment, 0, 0);
-        object[currentObj].xcounter = object[currentObj].xcounter + (sign * increment);
+        object[curObj].xcounter = object[curObj].xcounter + (sign * increment);
 
       } else if ((q == 'y') && (action == 't')) {
         D3d_translate (mat, minv, 0, sign * increment, 0);
-        object[currentObj].ycounter = object[currentObj].ycounter + (sign * increment);
+        object[curObj].ycounter = object[curObj].ycounter + (sign * increment);
 
       } else if ((q == 'z') && (action == 't')) {
         D3d_translate(mat, minv, 0, 0, sign * increment);
-        object[currentObj].zcounter = object[currentObj].zcounter + (sign * increment);
+        object[curObj].zcounter = object[curObj].zcounter + (sign * increment);
 
       } else if ((q == 'x') && (action == 'r')) {
-        D3d_translate(mat, minv, -object[currentObj].xcounter, -object[currentObj].ycounter, -object[currentObj].zcounter);
+        D3d_translate(mat, minv, -object[curObj].xcounter, -object[curObj].ycounter, -object[curObj].zcounter);
         D3d_rotate_x(mat, minv, sign * radians);
-        D3d_translate(mat, minv, object[currentObj].xcounter, object[currentObj].ycounter, object[currentObj].zcounter);
+        D3d_translate(mat, minv, object[curObj].xcounter, object[curObj].ycounter, object[curObj].zcounter);
 
       } else if ((q == 'y') && (action == 'r')) {
-        D3d_translate(mat, minv, -object[currentObj].xcounter, -object[currentObj].ycounter, -object[currentObj].zcounter);
+        D3d_translate(mat, minv, -object[curObj].xcounter, -object[curObj].ycounter, -object[curObj].zcounter);
         D3d_rotate_y(mat, minv, sign * radians);
-        D3d_translate(mat, minv, object[currentObj].xcounter, object[currentObj].ycounter, object[currentObj].zcounter);
+        D3d_translate(mat, minv, object[curObj].xcounter, object[curObj].ycounter, object[curObj].zcounter);
 
       } else if ((q == 'z') && (action == 'r')) {
-        D3d_translate(mat, minv, -object[currentObj].xcounter, -object[currentObj].ycounter, -object[currentObj].zcounter);
+        D3d_translate(mat, minv, -object[curObj].xcounter, -object[curObj].ycounter, -object[curObj].zcounter);
         D3d_rotate_z(mat, minv, sign * radians);
-        D3d_translate(mat, minv, object[currentObj].xcounter, object[currentObj].ycounter, object[currentObj].zcounter);
+        D3d_translate(mat, minv, object[curObj].xcounter, object[curObj].ycounter, object[curObj].zcounter);
 
       } else {
         printf("no action\n") ;
       }
 
-      D3d_mat_mult_points(object[currentObj].x, object[currentObj].y,
-                          object[currentObj].z, mat,
-                          object[currentObj].x, object[currentObj].y,
-                          object[currentObj].z,
-                          object[currentObj].points + 1) ;
-      //the numpoints[currentObj]+1 is because we have stored
+      D3d_mat_mult_points(object[curObj].x, object[curObj].y,
+                          object[curObj].z, mat,
+                          object[curObj].x, object[curObj].y,
+                          object[curObj].z,
+                          object[curObj].points + 1) ;
+      //the numpoints[curObj]+1 is because we have stored
       //the center of the object at the arrays' end
     }
   }

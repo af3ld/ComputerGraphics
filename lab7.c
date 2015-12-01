@@ -5,7 +5,9 @@ double halfangle = 40;
 double radians = 3 * (M_PI / 180);
 double LX, LY, LZ; //location of light source
 double EX, EY, EZ; //location of eye
-double ambient; //amount of ambient light
+double ambient = 0.2; //amount of ambient light
+double diffuse_max = 0.5;
+double spec_power = 0.75;
 int WIDTH = 600; int HEIGHT = 600; int DEPTH = 600;
 
 
@@ -36,6 +38,14 @@ typedef struct {
 } Final_plane;
 
 Final_plane total; //Global collection of planes
+
+void printarray(double *a, int size) {
+  int i;
+  for (i = 0; i < size; i++) {
+    printf("%.2lf\n", a[i]);
+  }
+  printf("\n");
+}
 
 //reads in file
 //Modified from lab2; does not read in colors
@@ -76,16 +86,21 @@ int compare (const void *p, const void *q) {
          ((*a).avg_depth) > ((*b).avg_depth) ? -1 : 0;
 }
 
-void light_tests() {
-
+//returns the dot product of two vectors
+double dot_product(double *vect1, double *vect2) {
+  return (vect1[0] * vect2[0]) + (vect1[1] *
+                                  vect2[1]) + (vect1[2] * vect2[2]);
 }
+
+//converts vector to unit vector
 void to_unit_vect(double *vect) {
   double mag = sqrt(pow(vect[0], 2) + pow(vect[1], 2) + pow(vect[2], 2));
   vect[0] /= mag; vect[1] /= mag; vect[2] /= mag;
 }
 
-void vector_setup(double *x, double *y, double *z, double *n_vect,
-                  double *l_vect, double *r_vect, double *e_vect) {
+//returns the dot product of the n & l vectors
+double vector_setup(double *x, double *y, double *z, double *n_vect,
+                    double *l_vect, double *r_vect, double *e_vect) {
   double vect1[3] = {x[0] - x[1],
                      y[0] - y[1],
                      z[0] - z[1]
@@ -107,6 +122,15 @@ void vector_setup(double *x, double *y, double *z, double *n_vect,
   e_vect[2] = x[0] - EZ;
   to_unit_vect(e_vect);
 
+  double nl = dot_product(l_vect, n_vect);
+  nl = (nl < 0) ? nl * -1 : nl;
+
+  r_vect[0] = n_vect[0] - 2 * nl * n_vect[0];
+  r_vect[1] = n_vect[1] - 2 * nl * n_vect[1];
+  r_vect[2] = n_vect[2] - 2 * nl * n_vect[2];
+
+  to_unit_vect(r_vect);
+  return nl;
 }
 
 void light_n_color(Plane *plane, Object poly) {
@@ -114,12 +138,18 @@ void light_n_color(Plane *plane, Object poly) {
   double l_vect[3] = {0.0};
   double e_vect[3] = {0.0};
   double r_vect[3] = {0.0};
-  vector_setup(plane->x, plane->y, plane->z, n_vect,
-               l_vect, r_vect, e_vect);
-
-  plane->color[0] = poly.r;
-  plane->color[1] = poly.g;
-  plane->color[2] = poly.b;
+  double nl = vector_setup(plane->x, plane->y, plane->z,
+                           n_vect, l_vect, r_vect, e_vect);
+  double specular = 1 - ambient - diffuse_max;
+  double er = dot_product(e_vect, r_vect);
+  double intensity = (dot_product(e_vect, n_vect) < 0) ? ambient :
+                     ambient + (diffuse_max * nl) + specular *
+                     pow(er, spec_power);
+  // printf("nl: %.2lf, specular: %.2lf, er: %.2lf, er^: %.2lf\n", nl, specular, er, pow(er, spec_power));
+  // printf("en: %.2lf, intensity: %.2lf\n", dot_product(e_vect, n_vect), intensity);
+  plane->color[0] = intensity;
+  plane->color[1] = intensity;
+  plane->color[2] = intensity;
 }
 
 //puts all the planes into collection
@@ -171,9 +201,9 @@ void draw() {
           total.plane[i].color[2]);
     G_fill_polygon(total.plane[i].x, total.plane[i].y,
                    total.plane[i].size);
-    G_rgb(1, 1, 1);
-    G_polygon(total.plane[i].x, total.plane[i].y,
-              total.plane[i].size);
+    // G_rgb(1, 1, 1);
+    // G_polygon(total.plane[i].x, total.plane[i].y,
+    //           total.plane[i].size);
   }
 }
 
@@ -228,6 +258,8 @@ int welcome(int i) {
   scanf("%lf %lf %lf", LX, LY, LZ);
   printf("Please input the location of the eye: ");
   scanf("%lf %lf %lf", EX, EY, EZ);
+  printf("Please input the ambient light, the diffuse max, and the spec_power: \n");
+  scanf("%lf %lf %lf", ambient, diffuse_max, spec_power);
   if (i == 1) {
     q = '1';
   } else if (i == 2) {
@@ -271,9 +303,10 @@ int main (int argc, char **argv) {
   }
 
   total.plane = malloc(temp  * sizeof(Plane));
-
-
-  curObj = welcome(argc - 1);
+  // curObj = welcome(argc - 1);
+  EX, EY, EZ = 300;
+  LX, LY, LZ = 300;
+  curObj = 1;
   sign = 1 ;
   action = 't' ;
 
@@ -293,6 +326,7 @@ int main (int argc, char **argv) {
         // printf("-----------------------\n");
       }
       draw();
+
 
       D3d_make_identity (mat) ;
       D3d_make_identity (minv) ;

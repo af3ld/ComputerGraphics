@@ -3,6 +3,9 @@
 
 double halfangle = 40;
 double radians = 3 * (M_PI / 180);
+double LX, LY, LZ; //location of light source
+double EX, EY, EZ; //location of eye
+double ambient; //amount of ambient light
 int WIDTH = 600; int HEIGHT = 600; int DEPTH = 600;
 
 
@@ -73,6 +76,52 @@ int compare (const void *p, const void *q) {
          ((*a).avg_depth) > ((*b).avg_depth) ? -1 : 0;
 }
 
+void light_tests() {
+
+}
+void to_unit_vect(double *vect) {
+  double mag = sqrt(pow(vect[0], 2) + pow(vect[1], 2) + pow(vect[2], 2));
+  vect[0] /= mag; vect[1] /= mag; vect[2] /= mag;
+}
+
+void vector_setup(double *x, double *y, double *z, double *n_vect,
+                  double *l_vect, double *r_vect, double *e_vect) {
+  double vect1[3] = {x[0] - x[1],
+                     y[0] - y[1],
+                     z[0] - z[1]
+                    };
+  double vect2[3] = {x[0] - x[2],
+                     y[0] - y[2],
+                     z[0] - z[2]
+                    };
+  D3d_x_product(n_vect, vect1, vect2); //this creates the orthagonal vec
+  to_unit_vect(n_vect);
+
+  l_vect[0] = x[0] - LX;
+  l_vect[1] = y[0] - LY;
+  l_vect[2] = x[0] - LZ;
+  to_unit_vect(l_vect);
+
+  e_vect[0] = x[0] - EX;
+  e_vect[1] = y[0] - EY;
+  e_vect[2] = x[0] - EZ;
+  to_unit_vect(e_vect);
+
+}
+
+void light_n_color(Plane *plane, Object poly) {
+  double n_vect[3] = {0.0};
+  double l_vect[3] = {0.0};
+  double e_vect[3] = {0.0};
+  double r_vect[3] = {0.0};
+  vector_setup(plane->x, plane->y, plane->z, n_vect,
+               l_vect, r_vect, e_vect);
+
+  plane->color[0] = poly.r;
+  plane->color[1] = poly.g;
+  plane->color[2] = poly.b;
+}
+
 //puts all the planes into collection
 void predraw(Object poly, int in) {
   double mod = (HEIGHT / 2) / tan(halfangle * (M_PI / 180));
@@ -99,9 +148,8 @@ void predraw(Object poly, int in) {
       }
     }
     plane[k].size = j;
-    plane[k].color[0] = poly.r;
-    plane[k].color[1] = poly.g;
-    plane[k].color[2] = poly.b;
+    light_n_color(&plane[k], poly);
+
     plane[k].avg_depth = plane[k].avg_depth / j;
   }
 
@@ -176,28 +224,28 @@ double scale_n_fit(Object* poly) {
 //changes the message based on how many objects are inputted via command line
 int welcome(int i) {
   char q;
+  printf("Please input the location of the light: ");
+  scanf("%lf %lf %lf", LX, LY, LZ);
+  printf("Please input the location of the eye: ");
+  scanf("%lf %lf %lf", EX, EY, EZ);
   if (i == 1) {
-    printf("Press 1 to move the object\n");
     q = '1';
   } else if (i == 2) {
-    printf("Press 1 or 2 to move the first or second object: ");
+    printf("Press 1 or 2 to switch between the first and second object: ");
     scanf("%c", &q);
   } else {
-    printf("Press 1 through %d to move that object: ", i);
+    printf("Press 1 through %d to switch between objects: ", i);
     scanf("%c", &q);
   }
   return q - '0';
 }
 
-int main (int argc, char **argv)
-{
+int main (int argc, char **argv) {
   char q, action;
   double mat[4][4], minv[4][4], scaleFactor;
   int cc, sign, curObj, k, h;
   int increment = 20; int temp = 0;
   Object object[argc];
-
-
 
   for (cc = 1; cc < argc; cc++) {
     object[cc].file = fopen(argv[cc], "r"); //opens a file; r = read only
@@ -307,4 +355,3 @@ int main (int argc, char **argv)
     }
   }
 }
-

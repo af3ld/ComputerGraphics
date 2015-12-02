@@ -1,13 +1,13 @@
 #include <FPT.h>
 #include <D3d_matrix.h>
 
-double halfangle = 40;
-double radians = 3 * (M_PI / 180);
-double LX, LY, LZ; //location of light source
-double EX, EY, EZ; //location of eye
 double ambient = 0.2; //amount of ambient light
 double diffuse_max = 0.5;
+double halfangle = 40;
+double radians = 3 * (M_PI / 180);
 double spec_power = 0.75;
+int EX, EY, EZ; //location of eye
+int LX, LY, LZ; //location of light source
 int WIDTH = 600; int HEIGHT = 600; int DEPTH = 600;
 
 
@@ -86,29 +86,22 @@ int compare (const void *p, const void *q) {
          ((*a).avg_depth) > ((*b).avg_depth) ? -1 : 0;
 }
 
-//returns the dot product of two vectors
-double dot_product(double *vect1, double *vect2) {
-  return (vect1[0] * vect2[0]) + (vect1[1] *
-                                  vect2[1]) + (vect1[2] * vect2[2]);
-}
-
 //converts vector to unit vector
 void to_unit_vect(double *vect) {
+  int i;
   double mag = sqrt(pow(vect[0], 2) + pow(vect[1], 2) + pow(vect[2], 2));
-  vect[0] /= mag; vect[1] /= mag; vect[2] /= mag;
+  for (i = 0; i < 3; i++) {
+    if (fabs(vect[i]) > 10e-7) {
+      vect[i] /= mag;
+    }
+  }
 }
 
 //returns the dot product of the n & l vectors
 double vector_setup(double *x, double *y, double *z, double *n_vect,
                     double *l_vect, double *r_vect, double *e_vect) {
-  double vect1[3] = {x[0] - x[1],
-                     y[0] - y[1],
-                     z[0] - z[1]
-                    };
-  double vect2[3] = {x[0] - x[2],
-                     y[0] - y[2],
-                     z[0] - z[2]
-                    };
+  double vect1[3] = {x[0] - x[1], y[0] - y[1], z[0] - z[1] };
+  double vect2[3] = {x[0] - x[2], y[0] - y[2], z[0] - z[2] };
   D3d_x_product(n_vect, vect1, vect2); //this creates the orthagonal vec
   to_unit_vect(n_vect);
 
@@ -122,14 +115,14 @@ double vector_setup(double *x, double *y, double *z, double *n_vect,
   e_vect[2] = x[0] - EZ;
   to_unit_vect(e_vect);
 
-  double nl = dot_product(l_vect, n_vect);
+  double nl = D3d_dot_product(l_vect, n_vect);
   nl = (nl < 0) ? nl * -1 : nl;
 
   r_vect[0] = n_vect[0] - 2 * nl * n_vect[0];
   r_vect[1] = n_vect[1] - 2 * nl * n_vect[1];
   r_vect[2] = n_vect[2] - 2 * nl * n_vect[2];
-
   to_unit_vect(r_vect);
+
   return nl;
 }
 
@@ -141,15 +134,16 @@ void light_n_color(Plane *plane, Object poly) {
   double nl = vector_setup(plane->x, plane->y, plane->z,
                            n_vect, l_vect, r_vect, e_vect);
   double specular = 1 - ambient - diffuse_max;
-  double er = dot_product(e_vect, r_vect);
-  double intensity = (dot_product(e_vect, n_vect) < 0) ? ambient :
+  double er = D3d_dot_product(e_vect, r_vect);
+  er = (er < 0) ? er * -1 : er;
+  double intensity = (D3d_dot_product(e_vect, n_vect) < 0) ? ambient :
                      ambient + (diffuse_max * nl) + specular *
                      pow(er, spec_power);
-  // printf("nl: %.2lf, specular: %.2lf, er: %.2lf, er^: %.2lf\n", nl, specular, er, pow(er, spec_power));
-  // printf("en: %.2lf, intensity: %.2lf\n", dot_product(e_vect, n_vect), intensity);
-  plane->color[0] = intensity;
-  plane->color[1] = intensity;
-  plane->color[2] = intensity;
+  // printf("intensity: %.2lf \ter: %.2lf \ter^: %.2lf \tnl: %.2lf\n", intensity, er, pow(er, spec_power), nl);
+  // printf("ambient: %.2lf \t specularity power: %.2lf \ten: %.2lf\n\n", ambient, spec_power, D3d_dot_product(e_vect, n_vect));
+  plane->color[0] = poly.r * intensity;
+  plane->color[1] = poly.g * intensity;
+  plane->color[2] = poly.b * intensity;
 }
 
 //puts all the planes into collection
@@ -252,24 +246,19 @@ double scale_n_fit(Object* poly) {
 }
 
 //changes the message based on how many objects are inputted via command line
-int welcome(int i) {
+void welcome(int i) {
   char q;
   printf("Please input the location of the light: ");
-  scanf("%lf %lf %lf", LX, LY, LZ);
+  scanf("%lf %lf %lf", &LX, &LY, &LZ);
   printf("Please input the location of the eye: ");
-  scanf("%lf %lf %lf", EX, EY, EZ);
-  printf("Please input the ambient light, the diffuse max, and the spec_power: \n");
-  scanf("%lf %lf %lf", ambient, diffuse_max, spec_power);
-  if (i == 1) {
-    q = '1';
-  } else if (i == 2) {
-    printf("Press 1 or 2 to switch between the first and second object: ");
-    scanf("%c", &q);
-  } else {
-    printf("Press 1 through %d to switch between objects: ", i);
-    scanf("%c", &q);
-  }
-  return q - '0';
+  scanf("%lf %lf %lf", &EX, &EY, &EZ);
+  printf("Please input the ambient light: ");
+  scanf("%lf", &ambient);
+  printf("Please input the diffuse max: ");
+  scanf("%lf", &diffuse_max);
+  printf("Please input the specularity exponent: ");
+  scanf("%lf", &spec_power);
+  printf("\n");
 }
 
 int main (int argc, char **argv) {
@@ -303,9 +292,8 @@ int main (int argc, char **argv) {
   }
 
   total.plane = malloc(temp  * sizeof(Plane));
-  // curObj = welcome(argc - 1);
-  EX, EY, EZ = 300;
-  LX, LY, LZ = 300;
+  welcome(argc - 1);
+
   curObj = 1;
   sign = 1 ;
   action = 't' ;
@@ -323,7 +311,6 @@ int main (int argc, char **argv) {
 
       for (cc = 1; cc < argc; cc++) {
         predraw(object[cc], cc);
-        // printf("-----------------------\n");
       }
       draw();
 
@@ -389,3 +376,4 @@ int main (int argc, char **argv) {
     }
   }
 }
+

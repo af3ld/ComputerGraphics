@@ -350,6 +350,14 @@ int D3d_x_product (double res[3], double a[3], double b[3]) {
 	return 1;
 }
 
+
+//returns the dot product of two vectors
+double D3d_dot_product(double vect1[3], double vect2[3]) {
+  return (vect1[0] * vect2[0]) + (vect1[1] *
+                                  vect2[1]) + (vect1[2] * vect2[2]);
+}
+
+
 int D3d_make_movement_sequence_matrix (
     double mat[4][4],
     double inv[4][4],

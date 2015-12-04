@@ -1,11 +1,11 @@
 #include <FPT.h>
 #include <D3d_matrix.h>
 
-double ambient = 0.2; //amount of ambient light
-double diffuse_max = 0.5;
+double ambient; //amount of ambient light
+double diffuse_max;
 double halfangle = 40;
 double radians = 3 * (M_PI / 180);
-double spec_power = 0.75;
+int spec_power;
 int EX, EY, EZ; //location of eye
 int LX, LY, LZ; //location of light source
 int WIDTH = 600; int HEIGHT = 600; int DEPTH = 600;
@@ -115,8 +115,12 @@ double vector_setup(double *x, double *y, double *z, double *n_vect,
   e_vect[2] = x[0] - EZ;
   to_unit_vect(e_vect);
 
+  if (D3d_dot_product(l_vect, n_vect) < 0) {
+    n_vect[0] *= -1;
+    n_vect[1] *= -1;
+    n_vect[2] *= -1;
+  }
   double nl = D3d_dot_product(l_vect, n_vect);
-  nl = (nl < 0) ? nl * -1 : nl;
 
   r_vect[0] = n_vect[0] - 2 * nl * n_vect[0];
   r_vect[1] = n_vect[1] - 2 * nl * n_vect[1];
@@ -126,24 +130,39 @@ double vector_setup(double *x, double *y, double *z, double *n_vect,
   return nl;
 }
 
-void light_n_color(Plane *plane, Object poly) {
+void color_setup(double intensity, double i_vect[3]) {
+  double temp1 = (1 - intensity) / (1 - tippingpoint);
+  double temp2 = intensity / tippingpoint;
+  double tippingpoint = ambient + diffuse_max;
+  int i;
+  for (i = 0; i < 3; i++) {
+    i_vect[i] = (intensity >= tippingpoint) ? temp1 * (1 - i_vect[i]) +
+                i_vect[i] : temp2 * i_vect[i];
+    // printf("point: %.2lf, value: %.2lf\n", temp, i_vect[i]);
+  }
+}
+
+void light_n_color(Plane* plane, Object poly) {
   double n_vect[3] = {0.0};
   double l_vect[3] = {0.0};
   double e_vect[3] = {0.0};
   double r_vect[3] = {0.0};
+  double i_vect[3] = {poly.r, poly.g, poly.b};
   double nl = vector_setup(plane->x, plane->y, plane->z,
                            n_vect, l_vect, r_vect, e_vect);
   double specular = 1 - ambient - diffuse_max;
   double er = D3d_dot_product(e_vect, r_vect);
-  er = (er < 0) ? er * -1 : er;
+  er = (er < 0) ? 0 : er;
   double intensity = (D3d_dot_product(e_vect, n_vect) < 0) ? ambient :
                      ambient + (diffuse_max * nl) + specular *
                      pow(er, spec_power);
+
+  color_setup(intensity, i_vect);
   // printf("intensity: %.2lf \ter: %.2lf \ter^: %.2lf \tnl: %.2lf\n", intensity, er, pow(er, spec_power), nl);
   // printf("ambient: %.2lf \t specularity power: %.2lf \ten: %.2lf\n\n", ambient, spec_power, D3d_dot_product(e_vect, n_vect));
-  plane->color[0] = poly.r * intensity;
-  plane->color[1] = poly.g * intensity;
-  plane->color[2] = poly.b * intensity;
+  plane->color[0] = i_vect[0];
+  plane->color[1] = i_vect[1];
+  plane->color[2] = i_vect[2];
 }
 
 //puts all the planes into collection
@@ -163,7 +182,6 @@ void predraw(Object poly, int in) {
         plane[k].y[j] = mod * (poly.y[poly.shapeorder[k][j]]
                                / poly.z[poly.shapeorder[k][j]])
                         + (WIDTH / 2);
-        // printf("%lf, %lf\n", plane[k].x[j], plane[k].y[j]);
         plane[k].z[j] = poly.z[poly.shapeorder[k][j]];
         plane[k].avg_depth += poly.z[poly.shapeorder[k][j]];
         j++;
@@ -179,11 +197,8 @@ void predraw(Object poly, int in) {
 
   for (k = 0; k < poly.numpolys; k++) {
     total.plane[k + total.counter] = plane[k];
-    // printf("%lf\n",  total->plane[k + total->counter].avg_depth);
   }
   total.counter += poly.numpolys;
-  // printf("-----------------------\n");
-  // printf("%d\n", total.counter);
 }
 
 //draws the all the planes based on average depth
@@ -195,12 +210,8 @@ void draw() {
           total.plane[i].color[2]);
     G_fill_polygon(total.plane[i].x, total.plane[i].y,
                    total.plane[i].size);
-    // G_rgb(1, 1, 1);
-    // G_polygon(total.plane[i].x, total.plane[i].y,
-    //           total.plane[i].size);
   }
 }
-
 
 //finds the largest/smallest value in array
 int findextrema(double *y, int z, int swatch) {
@@ -246,19 +257,26 @@ double scale_n_fit(Object* poly) {
 }
 
 //changes the message based on how many objects are inputted via command line
-void welcome(int i) {
+void welcome() {
   char q;
   printf("Please input the location of the light: ");
-  scanf("%lf %lf %lf", &LX, &LY, &LZ);
+  scanf("%d %d %d", &LX, &LY, &LZ);
   printf("Please input the location of the eye: ");
-  scanf("%lf %lf %lf", &EX, &EY, &EZ);
+  scanf("%d %d %d", &EX, &EY, &EZ);
   printf("Please input the ambient light: ");
   scanf("%lf", &ambient);
   printf("Please input the diffuse max: ");
   scanf("%lf", &diffuse_max);
   printf("Please input the specularity exponent: ");
-  scanf("%lf", &spec_power);
+  scanf("%d", &spec_power);
   printf("\n");
+}
+void temp_welcome() {
+  LX = 200; LY = 400; LZ = 0;
+  EX = 0; EY = 0; EZ = -100;
+  ambient = .2;
+  diffuse_max = .4;
+  spec_power = 75;
 }
 
 int main (int argc, char **argv) {
@@ -292,8 +310,8 @@ int main (int argc, char **argv) {
   }
 
   total.plane = malloc(temp  * sizeof(Plane));
-  welcome(argc - 1);
-
+  // welcome();
+  temp_welcome();
   curObj = 1;
   sign = 1 ;
   action = 't' ;
@@ -301,8 +319,9 @@ int main (int argc, char **argv) {
 
   if (curObj < argc && curObj > 0) {
     G_init_graphics(WIDTH, HEIGHT);
-    object[curObj].xcounter, object[curObj].ycounter,
-           object[curObj].zcounter = 0;
+    object[curObj].xcounter = 0;
+    object[curObj].ycounter = 0;
+    object[curObj].zcounter = 0;
 
     while (1) {
       G_rgb(0, 0, 0);

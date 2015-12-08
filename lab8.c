@@ -77,6 +77,85 @@ void readobject(FILE *g, Object* poly) {
   }
 }
 
+int Clip_Polygon_Against_Plane(
+  double a, double b, double c, double d,
+  double *polyx, double *polyy, double *polyz, int size,
+  double *resx, double *resy, double *resz)
+
+// Clip polygon against the plane ax + by + cz + d = 0,
+// where ax + by + cz + d < 0 is considered IN.
+// Incoming poly defined in arrays polyx, polyy, polyz with numverts = size.
+// Clipped result values are stored in arrays resx, resy, resz
+// The numverts of the clipped result is returned as value of the function.
+
+{
+  int num, i, j ;
+  double x1, y1, z1, x2, y2, z2, x21, y21, z21, den, t,
+         xintsct, yintsct, zintsct ;
+  double s1, s2 ;
+  num = 0 ;
+  for (i = 0 ; i < size ; i++) {
+    j = (i + 1) % size ;
+
+    // load up segment to be clipped
+    x1 = polyx[i] ; y1 = polyy[i] ; z1 = polyz[i] ; 
+    x2 = polyx[j] ; y2 = polyy[j] ; z2 = polyz[j] ; 
+
+    // clip line segment (x1,y1)-(x2,y2) against line
+    s1 = (a * x1 + b * y1 + c * z1 + d) ;
+    s2 = (a * x2 + b * y2 + c * z2 + d) ;
+
+    if ((s1 >= 0) && (s2 >= 0)) {
+      // out to out, do nothing
+    } else if ((s1 < 0) && (s2 < 0)) {
+      // in to in
+      resx[num] = x2 ; 
+      resy[num] = y2 ; 
+      resz[num] = z2; 
+      num++ ;
+    } else {
+      // one is in, the other out, so find the intersection
+      x21 = x2 - x1 ;
+      y21 = y2 - y1 ;
+      z21 = z2 - z1 ;
+      den = a * x21 + b * y21 + c * z21;
+      if (den == 0) continue ; // do nothing-should never happen
+      t = -(a * x1 + b * y1 + c * z1 + d) / den ;
+      xintsct = x1 + t * x21 ;
+      yintsct = y1 + t * y21 ;
+      zintsct = z1 + t * z21 ;
+
+      if (s1 < 0) {
+        // in to out
+        resx[num] = xintsct ; 
+        resy[num] = yintsct ; 
+        resz[num] = zintsct ; 
+        num++ ;
+      } else  {
+        // out to in
+        resx[num] = xintsct ; 
+        resy[num] = yintsct ; 
+        resz[num] = zintsct;
+        num++ ;
+
+        resx[num] = x2 ; 
+        resy[num] = y2 ; 
+        resz[num] = z2 ;
+        num++ ;
+      }
+    }
+  } // end for i
+  return num ;  // return size of the result poly
+}
+
+void clippers(){
+  Clip_Polygon_Against_Plane()
+  Clip_Polygon_Against_Plane()
+  Clip_Polygon_Against_Plane()
+  Clip_Polygon_Against_Plane()
+  Clip_Polygon_Against_Plane()
+}
+
 //Compare method; auxillary for qsort
 int compare (const void *p, const void *q) {
   Plane *a, *b ;

@@ -37,7 +37,7 @@ Final_plane total; //Global collection of planes
 //reads in file
 //Modified from lab2; does not read in colors
 void readobject(FILE *g, Object* poly) {
-  int j, k, p, np, shp[1000];
+  int j, k, p, np, shp[10000];
   // int temp_numpolys, temp_shapes[1000], temp_shapeorder[100][100];
   fscanf(g, "%d", &p);
   poly->points = p;
@@ -206,6 +206,8 @@ int main (int argc, char **argv)
       exit(1);
     } else {
       readobject(object[cc].file, &object[cc]);
+printf("cool\n");
+
 
       D3d_make_identity(mat); D3d_make_identity(minv);
       scaleFactor = scale_n_fit(&object[cc]);
@@ -221,7 +223,6 @@ int main (int argc, char **argv)
       temp += object[cc].numpolys;
     }
   }
-
   total.plane = malloc(temp  * sizeof(Plane));
 
 

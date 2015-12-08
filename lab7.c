@@ -50,7 +50,7 @@ void printarray(double *a, int size) {
 //reads in file
 //Modified from lab2; does not read in colors
 void readobject(FILE *g, Object* poly) {
-  int j, k, p, np, shp[1000];
+  int j, k, p, np, shp[10000];
   // int temp_numpolys, temp_shapes[1000], temp_shapeorder[100][100];
   fscanf(g, "%d", &p);
   poly->points = p;
@@ -131,9 +131,9 @@ double vector_setup(double *x, double *y, double *z, double *n_vect,
 }
 
 void color_setup(double intensity, double i_vect[3]) {
+  double tippingpoint = ambient + diffuse_max;
   double temp1 = (1 - intensity) / (1 - tippingpoint);
   double temp2 = intensity / tippingpoint;
-  double tippingpoint = ambient + diffuse_max;
   int i;
   for (i = 0; i < 3; i++) {
     i_vect[i] = (intensity >= tippingpoint) ? temp1 * (1 - i_vect[i]) +

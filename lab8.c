@@ -5,9 +5,9 @@ double ambient; //amount of ambient light
 double diffuse_max;
 double halfangle = 40;
 double radians = 3 * (M_PI / 180);
-int spec_power;
-int EX = 0; int EY = 0; int EZ = 0; //location of eye
+int hither = 1;
 int LX, LY, LZ; //location of light source
+int spec_power;
 int WIDTH = 600; int HEIGHT = 600; int DEPTH = 600;
 
 
@@ -98,8 +98,8 @@ int Clip_Polygon_Against_Plane(
     j = (i + 1) % size ;
 
     // load up segment to be clipped
-    x1 = polyx[i] ; y1 = polyy[i] ; z1 = polyz[i] ; 
-    x2 = polyx[j] ; y2 = polyy[j] ; z2 = polyz[j] ; 
+    x1 = polyx[i] ; y1 = polyy[i] ; z1 = polyz[i] ;
+    x2 = polyx[j] ; y2 = polyy[j] ; z2 = polyz[j] ;
 
     // clip line segment (x1,y1)-(x2,y2) against line
     s1 = (a * x1 + b * y1 + c * z1 + d) ;
@@ -109,9 +109,9 @@ int Clip_Polygon_Against_Plane(
       // out to out, do nothing
     } else if ((s1 < 0) && (s2 < 0)) {
       // in to in
-      resx[num] = x2 ; 
-      resy[num] = y2 ; 
-      resz[num] = z2; 
+      resx[num] = x2 ;
+      resy[num] = y2 ;
+      resz[num] = z2;
       num++ ;
     } else {
       // one is in, the other out, so find the intersection
@@ -127,19 +127,19 @@ int Clip_Polygon_Against_Plane(
 
       if (s1 < 0) {
         // in to out
-        resx[num] = xintsct ; 
-        resy[num] = yintsct ; 
-        resz[num] = zintsct ; 
+        resx[num] = xintsct ;
+        resy[num] = yintsct ;
+        resz[num] = zintsct ;
         num++ ;
       } else  {
         // out to in
-        resx[num] = xintsct ; 
-        resy[num] = yintsct ; 
+        resx[num] = xintsct ;
+        resy[num] = yintsct ;
         resz[num] = zintsct;
         num++ ;
 
-        resx[num] = x2 ; 
-        resy[num] = y2 ; 
+        resx[num] = x2 ;
+        resy[num] = y2 ;
         resz[num] = z2 ;
         num++ ;
       }
@@ -148,12 +148,16 @@ int Clip_Polygon_Against_Plane(
   return num ;  // return size of the result poly
 }
 
-void clippers(){
-  Clip_Polygon_Against_Plane()
-  Clip_Polygon_Against_Plane()
-  Clip_Polygon_Against_Plane()
-  Clip_Polygon_Against_Plane()
-  Clip_Polygon_Against_Plane()
+int clippers(double *x, double *y, double *z, int size) { //make temp
+  double yonder = 100;
+  size = Clip_Polygon_Against_Plane(0, 1, .57, 0, x, y, z, size, x, y, z);
+  size = Clip_Polygon_Against_Plane(0, -1, .57, 0, x, y, z, size, x, y, z);
+  size = Clip_Polygon_Against_Plane(1, 0, .57, 0, x, y, z, size, x, y, z);
+  size = Clip_Polygon_Against_Plane(-1, 0, .57, 0, x, y, z, size, x, y, z);
+  size = Clip_Polygon_Against_Plane(0, 0, 1, -yonder, x, y, z, size, x, y, z);
+  size = Clip_Polygon_Against_Plane(0, 0, 1, hither, x, y, z, size, x, y, z);
+
+  return size;
 }
 
 //Compare method; auxillary for qsort
@@ -191,9 +195,9 @@ double vector_setup(double *x, double *y, double *z, double *n_vect,
   l_vect[2] = LZ - z[0];
   to_unit_vect(l_vect);
 
-  e_vect[0] = EX - x[0];
-  e_vect[1] = EY - y[0];
-  e_vect[2] = EZ - z[0];
+  e_vect[0] = 0 - x[0]; //Eye at 0,0,0
+  e_vect[1] = 0 - y[0];
+  e_vect[2] = 0 - z[0];
   to_unit_vect(e_vect);
 
   if (D3d_dot_product(l_vect, n_vect) < 0) {
@@ -244,9 +248,27 @@ void light_n_color(Plane* plane) {
   plane->color[2] = i_vect[2];
 }
 
+void to_3d(Plane* plane, double *tempx, double *tempy, double *tempz,
+           int size) {
+  int j;
+  double mod = (HEIGHT / 2) / tan(halfangle * (M_PI / 180));
+  while (j < size) {
+    if (fabs(tempz[j]) < 10e-7) {
+      plane->x2d[j] = mod * tempx[j] / tempz[j] + (WIDTH / 2);
+      plane->y2d[j] = mod * tempy[j] / tempz[j] + (WIDTH / 2);
+      plane->x[j] = tempx[j];
+      plane->y[j] = tempy[j];
+      plane->z[j] = tempz[j];
+      j++;
+    } else {
+      j++;
+    }
+  }
+}
+
 //puts all the planes into collection
 void predraw(Object poly, int in) {
-  double mod = (HEIGHT / 2) / tan(halfangle * (M_PI / 180));
+  double tempx[100], tempy[100], tempz[100];
   int size = 0;
   int i, k, j;
   Plane plane[poly.numpolys];
@@ -254,26 +276,16 @@ void predraw(Object poly, int in) {
     j = 0;
     plane[k].avg_depth = 0.0;
     while (j < poly.shapes[k]) {
-      if (fabs(poly.z[poly.shapeorder[k][j]]) > 10e-7) { //Checks if z == 0
-        plane[k].x2d[j] = mod * (poly.x[poly.shapeorder[k][j]]
-                                 / poly.z[poly.shapeorder[k][j]])
-                          + (WIDTH / 2);
-        plane[k].y2d[j] = mod * (poly.y[poly.shapeorder[k][j]]
-                                 / poly.z[poly.shapeorder[k][j]])
-                          + (WIDTH / 2);
-                          
-        plane[k].x[j] = poly.x[poly.shapeorder[k][j]];
-        plane[k].y[j] = poly.y[poly.shapeorder[k][j]];
-        plane[k].z[j] = poly.z[poly.shapeorder[k][j]];
-        plane[k].avg_depth += poly.z[poly.shapeorder[k][j]];
-        j++;
-      } else {
-        j++;
-      }
+      tempx[j] = poly.x[poly.shapeorder[k][j]];
+      tempy[j] = poly.y[poly.shapeorder[k][j]];
+      tempz[j] = poly.z[poly.shapeorder[k][j]];
+      plane[k].avg_depth += poly.z[poly.shapeorder[k][j]];
+      j++;
     }
-    plane[k].size = j;
+    plane[k].size = clippers(tempx, tempy, tempz, j);
+    printf("%d\n", plane[k].size);
+    to_3d(&plane[k], tempx, tempy, tempz, plane[k].size);
     light_n_color(&plane[k]);
-
     plane[k].avg_depth = plane[k].avg_depth / j;
   }
 
@@ -351,13 +363,7 @@ void welcome() {
   scanf("%d", &spec_power);
   printf("\n");
 }
-void temp_welcome() {
-  LX = 200; LY = 400; LZ = 0;
-  EX = 0; EY = 0; EZ = -100;
-  ambient = .2;
-  diffuse_max = .4;
-  spec_power = 75;
-}
+
 
 int main (int argc, char **argv) {
   char q, action;
@@ -388,7 +394,6 @@ int main (int argc, char **argv) {
 
   total.plane = malloc(temp  * sizeof(Plane));
   welcome();
-  temp_welcome();
   curObj = 1;
   sign = 1 ;
   action = 't' ;

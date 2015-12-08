@@ -17,3 +17,5 @@
 
 <p>lab5: use lab4 to create only visual side (i.e. no back)</p>
 <p>lab6: draw the 3d polygons using painters algorithm</p>
+<p>lab7: light</p>
+<p>lab8: 3d clipping</p>

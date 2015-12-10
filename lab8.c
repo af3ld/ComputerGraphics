@@ -48,6 +48,19 @@ void printarray(double *a, int size) {
   printf("\n");
 }
 
+//deletes an item from an array
+int delete_from_parray(Plane *parray, int loc, int size) {
+  int i;
+  if (loc >= size + 1) {
+    printf("Deletion not possible.\n");
+  } else {
+    for (i = loc - 1 ; i < size - 1 ; i++) {
+      parray[i] = parray[i + 1];
+    }
+  }
+  return size - 1;
+}
+
 //reads in file
 //Modified from lab2; does not read in colors
 void readobject(FILE *g, Object* poly) {
@@ -87,7 +100,6 @@ int Clip_Polygon_Against_Plane(
 // Incoming poly defined in arrays polyx, polyy, polyz with numverts = size.
 // Clipped result values are stored in arrays resx, resy, resz
 // The numverts of the clipped result is returned as value of the function.
-
 {
   int num, i, j ;
   double x1, y1, z1, x2, y2, z2, x21, y21, z21, den, t,
@@ -101,14 +113,16 @@ int Clip_Polygon_Against_Plane(
     x1 = polyx[i] ; y1 = polyy[i] ; z1 = polyz[i] ;
     x2 = polyx[j] ; y2 = polyy[j] ; z2 = polyz[j] ;
 
-    // clip line segment (x1,y1)-(x2,y2) against line
     s1 = (a * x1 + b * y1 + c * z1 + d) ;
     s2 = (a * x2 + b * y2 + c * z2 + d) ;
+    // printf("s1:%.2lf,  s2:%.2lf,\n", s1, s2);
 
     if ((s1 >= 0) && (s2 >= 0)) {
       // out to out, do nothing
+      // printf("out to out\n");
     } else if ((s1 < 0) && (s2 < 0)) {
       // in to in
+      // printf("in to in\n");
       resx[num] = x2 ;
       resy[num] = y2 ;
       resz[num] = z2;
@@ -127,12 +141,14 @@ int Clip_Polygon_Against_Plane(
 
       if (s1 < 0) {
         // in to out
+        // printf("in to out\n");
         resx[num] = xintsct ;
         resy[num] = yintsct ;
         resz[num] = zintsct ;
         num++ ;
       } else  {
         // out to in
+        // printf("out to in\n");
         resx[num] = xintsct ;
         resy[num] = yintsct ;
         resz[num] = zintsct;
@@ -148,13 +164,20 @@ int Clip_Polygon_Against_Plane(
   return num ;  // return size of the result poly
 }
 
+//clips the face against the viewing pyramid
 int clippers(double *x, double *y, double *z, int size) { //make temp
-  double yonder = 100;
-  size = Clip_Polygon_Against_Plane(0, 1, .57, 0, x, y, z, size, x, y, z);
-  size = Clip_Polygon_Against_Plane(0, -1, .57, 0, x, y, z, size, x, y, z);
-  size = Clip_Polygon_Against_Plane(1, 0, .57, 0, x, y, z, size, x, y, z);
-  size = Clip_Polygon_Against_Plane(-1, 0, .57, 0, x, y, z, size, x, y, z);
+  double yonder = 1000;
+  double rads = halfangle * M_PI / 180;
+  size = Clip_Polygon_Against_Plane(0, 1, tan(rads), 0, x, y, z, size, x, y, z);
+  // printf("size = %d\n", size);
+  size = Clip_Polygon_Against_Plane(0, -1, tan(rads), 0, x, y, z, size, x, y, z);
+  // printf("size = %d\n", size);
+  size = Clip_Polygon_Against_Plane(1, 0, tan(rads), 0, x, y, z, size, x, y, z);
+  // printf("size = %d\n", size);
+  size = Clip_Polygon_Against_Plane(-1, 0, tan(rads), 0, x, y, z, size, x, y, z);
+  // printf("size = %d\n", size);
   size = Clip_Polygon_Against_Plane(0, 0, 1, -yonder, x, y, z, size, x, y, z);
+  // printf("size = %d\n", size);
   size = Clip_Polygon_Against_Plane(0, 0, 1, hither, x, y, z, size, x, y, z);
 
   return size;
@@ -248,12 +271,14 @@ void light_n_color(Plane* plane) {
   plane->color[2] = i_vect[2];
 }
 
+//converts the points from 3d to 2d
 void to_3d(Plane* plane, double *tempx, double *tempy, double *tempz,
-           int size) {
+           int size)
+{
   int j;
   double mod = (HEIGHT / 2) / tan(halfangle * (M_PI / 180));
   while (j < size) {
-    if (fabs(tempz[j]) < 10e-7) {
+    if (fabs(tempz[j]) > 10e-7) {
       plane->x2d[j] = mod * tempx[j] / tempz[j] + (WIDTH / 2);
       plane->y2d[j] = mod * tempy[j] / tempz[j] + (WIDTH / 2);
       plane->x[j] = tempx[j];
@@ -267,28 +292,26 @@ void to_3d(Plane* plane, double *tempx, double *tempy, double *tempz,
 }
 
 //puts all the planes into collection
-void predraw(Object poly, int in) {
+void predraw(Object poly) {
   double tempx[100], tempy[100], tempz[100];
-  int size = 0;
   int i, k, j;
   Plane plane[poly.numpolys];
   for (k = 0; k < poly.numpolys; k++) {
-    j = 0;
     plane[k].avg_depth = 0.0;
-    while (j < poly.shapes[k]) {
+    for (j = 0; j < poly.shapes[k]; j++) {
       tempx[j] = poly.x[poly.shapeorder[k][j]];
       tempy[j] = poly.y[poly.shapeorder[k][j]];
       tempz[j] = poly.z[poly.shapeorder[k][j]];
       plane[k].avg_depth += poly.z[poly.shapeorder[k][j]];
-      j++;
     }
     plane[k].size = clippers(tempx, tempy, tempz, j);
-    printf("%d\n", plane[k].size);
-    to_3d(&plane[k], tempx, tempy, tempz, plane[k].size);
-    light_n_color(&plane[k]);
-    plane[k].avg_depth = plane[k].avg_depth / j;
+    if (plane[k].size != 0) {
+      to_3d(&plane[k], tempx, tempy, tempz, plane[k].size);
+      light_n_color(&plane[k]);
+      plane[k].avg_depth = plane[k].avg_depth / plane[k].size;
+    }
   }
-
+  // exit(1);
   for (k = 0; k < poly.numpolys; k++) {
     total.plane[k + total.counter] = plane[k];
   }
@@ -364,6 +387,13 @@ void welcome() {
   printf("\n");
 }
 
+void temp_welcome() {
+  LX = 100; LY = 200; LZ = -50;
+  ambient = .2;
+  diffuse_max = .5;
+  spec_power = 75;
+}
+
 
 int main (int argc, char **argv) {
   char q, action;
@@ -393,7 +423,8 @@ int main (int argc, char **argv) {
   }
 
   total.plane = malloc(temp  * sizeof(Plane));
-  welcome();
+  // welcome();
+  temp_welcome();
   curObj = 1;
   sign = 1 ;
   action = 't' ;
@@ -411,7 +442,7 @@ int main (int argc, char **argv) {
       total.counter = 0;
 
       for (cc = 1; cc < argc; cc++) {
-        predraw(object[cc], cc);
+        predraw(object[cc]);
       }
       draw();
 
@@ -431,6 +462,8 @@ int main (int argc, char **argv) {
         action = q ;
       } else if (q == 'r') {
         action = q ;
+      } else if (q == 'h') {
+        hither += 5 * sign;
       } else if (('0' <= q) && (q <= '9')) {
         k = q - '0' ;
         if (h != curObj) {

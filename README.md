@@ -4,7 +4,8 @@
 
 <p>lab2: the user should be able to input a given .xy file and depending and rotate as longs as key is pressed (with respects to command line)</p>
 
-<p>lab3: an extension of lab2, but the user should be able to click a convex shape and be able to crop the view to that shape</p>
+<p>lab3: an extension of lab2, but the user should be able to click a convex shape and be able to crop the view to that shape<br>
+<b>TODO:</b> Convert what was built in clipping_test to lab3</p>
 
 <p>lab4: Build 3d objects
 <ul style="list-style-type:circle">
@@ -16,5 +17,3 @@
 
 <p>lab5: use lab4 to create only visual side (i.e. no back)</p>
 <p>lab6: draw the 3d polygons using painters algorithm</p>
-<p>lab7: light model</p>
-<p>lab8: 3d clipping</p>
